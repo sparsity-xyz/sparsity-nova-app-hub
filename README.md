@@ -8,7 +8,7 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 
 ### Key Features
 
-- **Transparent Builds**: All build processes are visible in GitHub Actions and AWS CodeBuild
+- **Transparent Builds**: All build processes are visible in GitHub Actions
 - **Reproducible**: Deterministic builds produce consistent PCR values
 - **Trustworthy**: Source code and configurations are version-controlled and reviewed
 - **Automated**: PR merge triggers automatic build pipeline
@@ -18,10 +18,10 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────┐
-│                         Nova App Hub - Two-Stage Build                         │
+│                           Nova App Hub - Build Pipeline                         │
 ├────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                │
-│  ┌─────────────────────────────── Stage 1: GitHub Actions ───────────────────┐ │
+│  ┌─────────────────────────────── GitHub Actions ─────────────────────────────┐ │
 │  │                                                                           │ │
 │  │  1. Developer PR        2. Validation         3. Docker Build            │ │
 │  │     ┌─────────┐           ┌─────────┐           ┌─────────────┐          │ │
@@ -30,16 +30,12 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 │  │     │  .yaml  │           │ Repo    │           │ Push to ECR │          │ │
 │  │     └─────────┘           └─────────┘           └─────────────┘          │ │
 │  │                                                        │                  │ │
-│  └────────────────────────────────────────────────────────│──────────────────┘ │
-│                                                           │                    │
-│  ┌────────────────────────────────────────────────────────│──────────────────┐ │
-│  │                          Stage 2: AWS CodeBuild        ▼                  │ │
-│  │                                                                           │ │
-│  │     ┌─────────────┐      ┌─────────────┐      ┌─────────────────┐        │ │
-│  │     │ Pull Docker │ ───▶ │ nitro-cli   │ ───▶ │  Upload EIF     │        │ │
-│  │     │   Image     │      │ build-enclave│     │  + PCR values   │        │ │
-│  │     └─────────────┘      └─────────────┘      │  to S3 + Release│        │ │
-│  │                                               └─────────────────┘        │ │
+│  │                                                        ▼                  │ │
+│  │     ┌─────────────────┐      ┌─────────────┐      ┌─────────────┐        │ │
+│  │     │  Upload EIF     │ ◀─── │ nitro-cli   │ ◀─── │ Pull Docker │        │ │
+│  │     │  + PCR values   │      │ build-enclave│     │   Image     │        │ │
+│  │     │  to S3 + Release│      └─────────────┘      └─────────────┘        │ │
+│  │     └─────────────────┘                                                  │ │
 │  └───────────────────────────────────────────────────────────────────────────┘ │
 │                                                                                │
 └────────────────────────────────────────────────────────────────────────────────┘
@@ -216,7 +212,7 @@ s3://nova-app-hub-artifacts/builds/<app-name>/<version>/
 
 ### Prerequisites
 
-- AWS Account with Nitro Enclave support
+- AWS Account
 - GitHub repository admin access
 
 ### Deploy Infrastructure
@@ -257,7 +253,6 @@ env:
   ECR_REGISTRY: <account-id>.dkr.ecr.<region>.amazonaws.com
   ECR_REPOSITORY_PREFIX: nova-apps
   S3_BUCKET: <artifacts-bucket-name>
-  CODEBUILD_PROJECT: nova-app-hub-eif-builder
 ```
 
 ## Repository Structure
@@ -267,7 +262,7 @@ nova-app-hub/
 ├── .github/
 │   └── workflows/
 │       ├── pr-validation.yml       # PR validation
-│       └── build-on-merge.yml      # Build pipeline (Stage 1)
+│       └── build-on-merge.yml      # Build pipeline
 ├── apps/
 │   ├── _example/                   # Example configuration
 │   │   └── nova-build.yaml
@@ -275,10 +270,8 @@ nova-app-hub/
 │       ├── nova-build.yaml         # Build configuration
 │       └── BUILD_INFO.md           # Auto-generated build info
 ├── aws/
-│   ├── cloudformation/
-│   │   └── infrastructure.yml      # AWS infrastructure
-│   └── codebuild/
-│       └── buildspec.yml           # CodeBuild spec (Stage 2)
+│   └── cloudformation/
+│       └── infrastructure.yml      # AWS infrastructure
 ├── schemas/
 │   └── nova-build.schema.json      # JSON Schema
 ├── scripts/
@@ -290,7 +283,7 @@ nova-app-hub/
 
 - **Admin-only merge**: Only administrators can merge PRs
 - **Public repos only**: Only public GitHub repositories allowed
-- **Transparent builds**: All logs visible in GitHub Actions and CodeBuild
+- **Transparent builds**: All logs visible in GitHub Actions
 - **Reproducible**: Same source produces same PCR values
 - **Attestation**: PCR values enable remote attestation
 

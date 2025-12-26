@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Nova App Hub - AWS Infrastructure for Nitro Enclave EIF Building'
+Description: 'Nova App Hub - AWS Infrastructure for Docker Image Storage and EIF Artifacts'
 
 Parameters:
   ProjectName:
@@ -58,69 +58,6 @@ Resources:
   # This is a base repository for shared images if needed
   
   #############################################
-  # IAM Role for CodeBuild
-  #############################################
-  CodeBuildServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub '${ProjectName}-codebuild-role'
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codebuild.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CodeBuildPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              # CloudWatch Logs
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}-*'
-                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}-*:*'
-              
-              # S3 Access
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:ListBucket
-                Resource:
-                  - !GetAtt ArtifactsBucket.Arn
-                  - !Sub '${ArtifactsBucket.Arn}/*'
-              
-              # ECR Access
-              - Effect: Allow
-                Action:
-                  - ecr:GetAuthorizationToken
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:BatchGetImage
-                  - ecr:PutImage
-                  - ecr:InitiateLayerUpload
-                  - ecr:UploadLayerPart
-                  - ecr:CompleteLayerUpload
-                  - ecr:DescribeRepositories
-                  - ecr:CreateRepository
-                  - ecr:SetRepositoryPolicy
-                Resource:
-                  - !Sub 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ECRRepositoryPrefix}/*'
-      Tags:
-        - Key: Project
-          Value: !Ref ProjectName
-
-  #############################################
   # IAM User for GitHub Actions
   #############################################
   GitHubActionsUser:
@@ -163,15 +100,6 @@ Resources:
                 Resource:
                   - !GetAtt ArtifactsBucket.Arn
                   - !Sub '${ArtifactsBucket.Arn}/*'
-              
-              # CodeBuild Access
-              - Effect: Allow
-                Action:
-                  - codebuild:StartBuild
-                  - codebuild:BatchGetBuilds
-                  - codebuild:ListBuildsForProject
-                Resource:
-                  - !GetAtt EIFBuilderProject.Arn
       Tags:
         - Key: Project
           Value: !Ref ProjectName
@@ -180,49 +108,6 @@ Resources:
     Type: AWS::IAM::AccessKey
     Properties:
       UserName: !Ref GitHubActionsUser
-
-  #############################################
-  # CodeBuild Project for EIF Generation
-  #############################################
-  EIFBuilderProject:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Name: !Sub '${ProjectName}-eif-builder'
-      Description: 'Builds AWS Nitro Enclave EIF files from Docker images'
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
-      Artifacts:
-        Type: NO_ARTIFACTS
-      Environment:
-        Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_LARGE
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
-        PrivilegedMode: true
-        EnvironmentVariables:
-          - Name: AWS_DEFAULT_REGION
-            Value: !Ref AWS::Region
-          - Name: S3_BUCKET
-            Value: !Ref ArtifactsBucket
-      Source:
-        Type: S3
-        Location: !Sub '${ArtifactsBucket}/codebuild/buildspec.yml'
-      TimeoutInMinutes: 60
-      QueuedTimeoutInMinutes: 30
-      LogsConfig:
-        CloudWatchLogs:
-          Status: ENABLED
-          GroupName: !Sub '/aws/codebuild/${ProjectName}-eif-builder'
-      Tags:
-        - Key: Project
-          Value: !Ref ProjectName
-
-  #############################################
-  # CloudWatch Log Group
-  #############################################
-  CodeBuildLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/codebuild/${ProjectName}-eif-builder'
-      RetentionInDays: 30
 
 Outputs:
   ArtifactsBucketName:
@@ -234,16 +119,6 @@ Outputs:
   ArtifactsBucketArn:
     Description: S3 bucket ARN
     Value: !GetAtt ArtifactsBucket.Arn
-  
-  CodeBuildProjectName:
-    Description: CodeBuild project name for EIF building
-    Value: !Ref EIFBuilderProject
-    Export:
-      Name: !Sub '${ProjectName}-codebuild-project'
-  
-  CodeBuildProjectArn:
-    Description: CodeBuild project ARN
-    Value: !GetAtt EIFBuilderProject.Arn
   
   GitHubActionsAccessKeyId:
     Description: Access Key ID for GitHub Actions (store in GitHub Secrets as AWS_ACCESS_KEY_ID)
@@ -276,4 +151,3 @@ Outputs:
          - ECR_REGISTRY: <ECRRegistryUrl output>
          - ECR_REPOSITORY_PREFIX: <ECRRepositoryPrefix output>
          - S3_BUCKET: <ArtifactsBucketName output>
-         - CODEBUILD_PROJECT: <CodeBuildProjectName output>
