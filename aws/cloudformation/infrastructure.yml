@@ -203,61 +203,8 @@ Resources:
           - Name: S3_BUCKET
             Value: !Ref ArtifactsBucket
       Source:
-        Type: NO_SOURCE
-        BuildSpec: |
-          version: 0.2
-          
-          env:
-            variables:
-              APP_NAME: "example-app"
-              APP_VERSION: "1.0.0"
-              IMAGE_URI: ""
-              DEBUG_MODE: "false"
-              SOURCE_COMMIT: ""
-              SOURCE_COMMIT_SHORT: ""
-              GITHUB_RUN_ID: ""
-          
-          phases:
-            install:
-              runtime-versions:
-                docker: 20
-              commands:
-                - echo "Installing AWS Nitro CLI..."
-                - amazon-linux-extras install aws-nitro-enclaves-cli -y || yum install aws-nitro-enclaves-cli -y
-                - yum install aws-nitro-enclaves-cli-devel jq -y
-                - nitro-cli --version || echo "Note: nitro-cli requires Nitro Enclave-enabled instance"
-            
-            pre_build:
-              commands:
-                - echo "Logging in to Amazon ECR..."
-                - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $(echo $IMAGE_URI | cut -d'/' -f1)
-                - echo "Pulling Docker image..."
-                - docker pull $IMAGE_URI
-            
-            build:
-              commands:
-                - echo "Building Nitro Enclave EIF..."
-                - mkdir -p output
-                - |
-                  if [ "$DEBUG_MODE" = "true" ]; then
-                    nitro-cli build-enclave --docker-uri $IMAGE_URI --output-file output/${APP_NAME}.eif --debug-mode 2>&1 | tee output/build-output.txt
-                  else
-                    nitro-cli build-enclave --docker-uri $IMAGE_URI --output-file output/${APP_NAME}.eif 2>&1 | tee output/build-output.txt
-                  fi
-                - PCR0=$(grep -oP '"PCR0"\:\s*"\K[^"]+' output/build-output.txt || echo "")
-                - PCR1=$(grep -oP '"PCR1"\:\s*"\K[^"]+' output/build-output.txt || echo "")
-                - PCR2=$(grep -oP '"PCR2"\:\s*"\K[^"]+' output/build-output.txt || echo "")
-                - echo "{\"PCR0\":\"$PCR0\",\"PCR1\":\"$PCR1\",\"PCR2\":\"$PCR2\"}" > output/pcr.json
-                - echo "{\"app_name\":\"$APP_NAME\",\"version\":\"$APP_VERSION\",\"image_uri\":\"$IMAGE_URI\",\"source_commit\":\"$SOURCE_COMMIT\",\"debug_mode\":$DEBUG_MODE,\"github_run_id\":\"$GITHUB_RUN_ID\",\"build_timestamp\":\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > output/build-info.json
-            
-            post_build:
-              commands:
-                - echo "Uploading artifacts to S3..."
-                - aws s3 cp output/${APP_NAME}.eif s3://${S3_BUCKET}/builds/${APP_NAME}/${APP_VERSION}/${APP_NAME}.eif
-                - aws s3 cp output/pcr.json s3://${S3_BUCKET}/builds/${APP_NAME}/${APP_VERSION}/pcr.json
-                - aws s3 cp output/build-info.json s3://${S3_BUCKET}/builds/${APP_NAME}/${APP_VERSION}/build-info.json
-                - aws s3 cp output/build-output.txt s3://${S3_BUCKET}/builds/${APP_NAME}/${APP_VERSION}/build-output.txt
-                - echo "Build completed!"
+        Type: S3
+        Location: !Sub '${ArtifactsBucket}/codebuild/buildspec.yml'
       TimeoutInMinutes: 60
       QueuedTimeoutInMinutes: 30
       LogsConfig:

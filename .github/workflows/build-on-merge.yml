@@ -339,6 +339,12 @@ jobs:
           
           echo "s3_metadata_path=s3://${{ env.S3_BUCKET }}/builds/${{ steps.config.outputs.name }}/${{ steps.config.outputs.version }}/build-metadata.json" >> $GITHUB_OUTPUT
       
+      - name: Upload buildspec to S3
+        run: |
+          # Upload the external buildspec.yml to S3 for CodeBuild to use
+          aws s3 cp aws/codebuild/buildspec.yml "s3://${{ env.S3_BUCKET }}/codebuild/buildspec.yml"
+          echo "✅ Uploaded buildspec.yml to S3"
+      
       - name: Trigger AWS CodeBuild for EIF generation
         id: codebuild
         run: |
