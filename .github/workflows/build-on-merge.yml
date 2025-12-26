@@ -10,11 +10,11 @@ on:
       - 'apps/**'
 
 env:
-  # AWS Configuration (update these values)
-  AWS_REGION: us-east-1
-  ECR_REGISTRY: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+  # AWS Configuration (from CloudFormation stack outputs)
+  AWS_REGION: us-west-1
+  ECR_REGISTRY: 004118891089.dkr.ecr.us-west-1.amazonaws.com
   ECR_REPOSITORY_PREFIX: nova-apps
-  S3_BUCKET: nova-app-hub-artifacts
+  S3_BUCKET: nova-app-hub-artifacts-004118891089
   CODEBUILD_PROJECT: nova-app-hub-eif-builder
 
 jobs:
