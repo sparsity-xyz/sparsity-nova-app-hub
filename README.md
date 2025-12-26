@@ -4,43 +4,15 @@ A centralized, transparent, and trustworthy build platform for AWS Nitro Enclave
 
 ## Overview
 
-Nova App Hub enables developers to build their applications into AWS Nitro Enclave format through a transparent, auditable process. All builds are reproducible, ensuring consistent PCR (Platform Configuration Register) values for remote attestation.
+Nova App Hub enables developers to build their applications into AWS Nitro Enclave format through a transparent, auditable process. Each build produces PCR (Platform Configuration Register) values for remote attestation.
 
 ### Key Features
 
 - **Transparent Builds**: All build processes are visible in GitHub Actions
-- **Reproducible**: Deterministic builds produce consistent PCR values
 - **Trustworthy**: Source code and configurations are version-controlled and reviewed
 - **Automated**: PR merge triggers automatic build pipeline
 - **Verifiable**: Each release includes PCR values, source commit, and build artifacts
-- **Enclaver-Powered**: Uses [Enclaver](https://github.com/sparsity-xyz/enclaver) for enclave packaging and runtime
-
-## Architecture
-
-```
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                           Nova App Hub - Build Pipeline                         │
-├────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                │
-│  ┌─────────────────────────────── GitHub Actions ─────────────────────────────┐ │
-│  │                                                                           │ │
-│  │  1. Developer PR        2. Validation         3. Docker Build            │ │
-│  │     ┌─────────┐           ┌─────────┐           ┌─────────────┐          │ │
-│  │     │  Add    │ ────────▶ │ Schema  │ ────────▶ │ Build App   │          │ │
-│  │     │ config  │           │ Check   │           │ Docker Image│          │ │
-│  │     │  .yaml  │           │ Repo    │           │             │          │ │
-│  │     └─────────┘           └─────────┘           └─────────────┘          │ │
-│  │                                                        │                  │ │
-│  │                                                        ▼                  │ │
-│  │     ┌─────────────────┐      ┌─────────────┐      ┌─────────────┐        │ │
-│  │     │  Push Release   │ ◀─── │  Enclaver   │ ◀─── │  Generate   │        │ │
-│  │     │  Image to ECR   │      │    Build    │      │enclaver.yaml│        │ │
-│  │     │  (EIF embedded) │      │  (EIF + RT) │      └─────────────┘        │ │
-│  │     └─────────────────┘      └─────────────┘                             │ │
-│  └───────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                │
-└────────────────────────────────────────────────────────────────────────────────┘
-```
+- **SLSA Level 3**: Builds are signed using Sigstore cosign with keyless signing
 
 ## Quick Start
 
@@ -86,11 +58,6 @@ enclaver:
   egress_allow:               # Domains allowed for egress
     - api.example.com
 
-# Optional: Reproducible build settings
-reproducible:
-  enabled: true
-  # source_date_epoch: 1700000000  # Fixed timestamp (uses commit time if not set)
-
 # Optional: Metadata
 metadata:
   description: "Your application description"
@@ -112,7 +79,7 @@ After build completes:
 
 - **Release Image**: Docker image with embedded EIF in AWS ECR
 - **PCR Values**: Recorded in `pcr.json`
-- **Build Info**: Complete build metadata in `build-info.json`
+- **Build Metadata**: Complete build info in `build-metadata.json` (includes PCR, SLSA provenance)
 
 ## Configuration Reference
 
@@ -139,12 +106,8 @@ After build completes:
 | `enclaver.aux_api_port` | integer | `9001` | Auxiliary API port |
 | `enclaver.memory_mb` | integer | `1500` | Memory allocation (MB) |
 | `enclaver.egress_allow` | array | `[]` | Allowed egress domains |
-| `reproducible.enabled` | boolean | `true` | Enable reproducible builds |
-| `reproducible.source_date_epoch` | integer | (commit time) | Fixed timestamp |
 
-## Reproducible Builds & PCR Values
-
-### What are PCR Values?
+## PCR Values
 
 AWS Nitro Enclaves use Platform Configuration Registers (PCRs) for remote attestation:
 
@@ -154,72 +117,17 @@ AWS Nitro Enclaves use Platform Configuration Registers (PCRs) for remote attest
 | **PCR1** | Hash of the Linux kernel and bootstrap |
 | **PCR2** | Hash of the application |
 
-### Ensuring Reproducible PCR Values
-
-To get consistent PCR values across builds:
-
-1. **Use `SOURCE_DATE_EPOCH`**: Set a fixed timestamp in your config or let the system use the commit timestamp
-2. **Pin dependencies**: Use specific versions in your Dockerfile
-3. **Avoid non-deterministic operations**: No random data, sorted file operations
-4. **Use digest-pinned base images**: 
-   ```dockerfile
-   FROM ubuntu:22.04@sha256:xxxxx
-   ```
-
-### Dockerfile Best Practices
-
-```dockerfile
-# Use digest-pinned base image for reproducibility
-FROM ubuntu:22.04@sha256:xxxxx
-
-# Accept SOURCE_DATE_EPOCH for reproducible builds
-ARG SOURCE_DATE_EPOCH
-ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
-
-# Install packages in sorted order
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    package1 \
-    package2 \
-    package3 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy application
-COPY . /app
-WORKDIR /app
-
-# Set entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
-```
-
 ## Build Outputs
-
-### GitHub Release
 
 Each build creates a GitHub Release with:
 
 - Tag: `<app-name>-v<version>`
 - Attachments:
-  - `pcr.json` - PCR values
-  - `build-info.json` - Build metadata
+  - `pcr.json` - PCR values for attestation
+  - `build-metadata.json` - Unified build metadata (source, image, PCR, SLSA)
   - `enclaver.yaml` - Generated enclaver configuration
 
-### PCR.json Format
-
-```json
-{
-  "PCR0": "abc123...",
-  "PCR1": "def456...",
-  "PCR2": "ghi789..."
-}
-```
-
-### Release Docker Image
-
-The release image contains everything needed to run the enclave:
-- Enclaver runtime (`enclaver-run`)
-- Nitro CLI
-- EIF file (`/enclave/application.eif`)
-- Configuration (`/enclave/enclaver.yaml`)
+### Running the Release Image
 
 Run on an EC2 instance with Nitro Enclave support:
 
@@ -228,125 +136,24 @@ docker pull <ECR_REGISTRY>/nova-apps/<app-name>:<version>
 docker run --rm --privileged <ECR_REGISTRY>/nova-apps/<app-name>:<version>
 ```
 
-### S3 Artifacts
+## SLSA Provenance & Verification
 
-```
-s3://nova-app-hub-artifacts/builds/<app-name>/<version>/
-├── pcr.json
-├── build-info.json
-├── build-output.txt
-└── enclaver.yaml
-```
+All container images are signed using [Sigstore cosign](https://sigstore.dev) with keyless signing. This provides SLSA Level 3 provenance guarantees.
 
-## AWS Infrastructure Setup
-
-### Prerequisites
-
-- AWS Account
-- GitHub repository admin access
-
-### Deploy Infrastructure
-
-1. Deploy the CloudFormation stack:
+### Verify Container Image Signature
 
 ```bash
-aws cloudformation create-stack \
-  --stack-name nova-app-hub \
-  --template-body file://aws/cloudformation/infrastructure.yml \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --parameters \
-    ParameterKey=ProjectName,ParameterValue=nova-app-hub \
-    ParameterKey=GitHubOrg,ParameterValue=your-org \
-    ParameterKey=GitHubRepo,ParameterValue=your-repo
+cosign verify \
+  --certificate-identity-regexp='https://github.com/sparsity-xyz/sparsity-nova-app-hub/.*' \
+  --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
+  <ECR_REGISTRY>/nova-apps/<app-name>:<version>@<digest>
 ```
-
-2. Get the outputs:
-
-```bash
-aws cloudformation describe-stacks \
-  --stack-name nova-app-hub \
-  --query 'Stacks[0].Outputs'
-```
-
-3. Configure GitHub Secrets:
-
-| Secret | Value |
-|--------|-------|
-| `AWS_ACCESS_KEY_ID` | From CloudFormation output |
-| `AWS_SECRET_ACCESS_KEY` | From CloudFormation output |
-
-4. Update workflow environment variables in `.github/workflows/build-on-merge.yml`:
-
-```yaml
-env:
-  AWS_REGION: <your-region>
-  ECR_REGISTRY: <account-id>.dkr.ecr.<region>.amazonaws.com
-  ECR_REPOSITORY_PREFIX: nova-apps
-  S3_BUCKET: <artifacts-bucket-name>
-```
-
-## Repository Structure
-
-```
-nova-app-hub/
-├── .github/
-│   └── workflows/
-│       ├── pr-validation.yml       # PR validation
-│       └── build-on-merge.yml      # Build pipeline (Enclaver)
-├── apps/
-│   ├── _example/                   # Example configuration
-│   │   └── nova-build.yaml
-│   └── your-app/
-│       ├── nova-build.yaml         # Build configuration
-│       └── BUILD_INFO.md           # Auto-generated build info
-├── aws/
-│   └── cloudformation/
-│       └── infrastructure.yml      # AWS infrastructure
-├── schemas/
-│   └── nova-build.schema.json      # JSON Schema
-├── scripts/
-│   └── validate-config.sh          # Local validation
-└── README.md
-```
-
-## Security
-
-- **Admin-only merge**: Only administrators can merge PRs
-- **Public repos only**: Only public GitHub repositories allowed
-- **Transparent builds**: All logs visible in GitHub Actions
-- **Reproducible**: Same source produces same PCR values
-- **Attestation**: PCR values enable remote attestation
-
-## Verification
 
 ### Verify Build Artifacts
 
 1. Check the GitHub Actions run for complete logs
 2. Compare PCR values in release with expected values
-3. Verify image digest matches
-
-### Remote Attestation
-
-Use the PCR values from `pcr.json` in your AWS KMS key policy:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": { "AWS": "arn:aws:iam::ACCOUNT:role/enclave-role" },
-      "Action": "kms:Decrypt",
-      "Resource": "*",
-      "Condition": {
-        "StringEqualsIgnoreCase": {
-          "kms:RecipientAttestation:PCR0": "<PCR0-value>"
-        }
-      }
-    }
-  ]
-}
-```
+3. Verify the container signature using cosign
 
 ## FAQ
 
@@ -379,11 +186,9 @@ Enclaver packages your application Docker image into a release image containing:
 
 See [Enclaver documentation](https://github.com/sparsity-xyz/enclaver) for details.
 
-## Contributing
+---
 
-1. Fork this repository
-2. Create your feature branch
-3. Submit a pull request
+> **For administrators**: See [docs/nova-app-hub.md](docs/nova-app-hub.md) for AWS infrastructure setup, repository structure, and internal documentation.
 
 ## License
 

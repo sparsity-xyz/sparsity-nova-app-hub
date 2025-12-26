@@ -90,6 +90,13 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
+    
+    # Permissions required for SLSA provenance and keyless signing
+    permissions:
+      contents: write      # For creating releases and committing BUILD_INFO.md
+      packages: write      # For pushing to container registry
+      id-token: write      # Required for OIDC/keyless signing via Sigstore
+    
     strategy:
       fail-fast: false
       matrix:
@@ -98,6 +105,7 @@ jobs:
     outputs:
       image_uri: ${{ steps.enclaver.outputs.release_image }}
       image_digest: ${{ steps.enclaver.outputs.digest }}
+      rekor_log_index: ${{ steps.sign.outputs.rekor_index }}
     
     steps:
       - name: Checkout repository
@@ -312,6 +320,9 @@ jobs:
           echo "✅ Application Docker image built successfully"
           echo "   Image: ${LOCAL_IMAGE}"
       
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+      
       - name: Install Enclaver CLI
         run: |
           echo "Installing Enclaver CLI..."
@@ -428,30 +439,7 @@ jobs:
           # Get image digest
           DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${RELEASE_IMAGE}" | cut -d'@' -f2 || echo "")
           
-          # Create build info JSON
-          cat > build-info.json << EOF
-          {
-            "app_name": "$NAME",
-            "version": "$VERSION",
-            "release_image": "${RELEASE_IMAGE}",
-            "source_commit": "${{ steps.clone.outputs.commit_sha }}",
-            "source_commit_short": "${{ steps.clone.outputs.commit_short }}",
-            "source_date_epoch": "${{ steps.epoch.outputs.epoch }}",
-            "debug_mode": $DEBUG_MODE,
-            "github_run_id": "${{ github.run_id }}",
-            "build_timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
-            "pcr": {
-              "PCR0": "$PCR0",
-              "PCR1": "$PCR1",
-              "PCR2": "$PCR2"
-            }
-          }
-          EOF
-          
-          echo "Build info saved to build-info.json"
-          cat build-info.json
-          
-          # Set outputs
+          # Set outputs (before signing so they're available)
           echo "release_image=${RELEASE_IMAGE}" >> $GITHUB_OUTPUT
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
           echo "pcr0=$PCR0" >> $GITHUB_OUTPUT
@@ -462,6 +450,85 @@ jobs:
           echo "   Image: ${RELEASE_IMAGE}"
           echo "   Digest: $DIGEST"
       
+      - name: Sign container image (keyless via Sigstore)
+        id: sign
+        run: |
+          RELEASE_IMAGE="${{ steps.enclaver.outputs.release_image }}"
+          DIGEST="${{ steps.enclaver.outputs.digest }}"
+          
+          echo "Signing container image with cosign (keyless)..."
+          echo "  Image: ${RELEASE_IMAGE}"
+          echo "  Digest: ${DIGEST}"
+          
+          # Sign the image using keyless signing via Sigstore Fulcio
+          cosign sign --yes "${RELEASE_IMAGE}@${DIGEST}"
+          
+          echo "✅ Image signed successfully"
+          
+          # Verify the signature and extract Rekor log index
+          echo "Verifying signature..."
+          VERIFY_OUTPUT=$(cosign verify \
+            --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+            --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
+            "${RELEASE_IMAGE}@${DIGEST}" 2>&1) || true
+          
+          echo "$VERIFY_OUTPUT"
+          
+          # Extract Rekor log index from verification output
+          REKOR_INDEX=$(echo "$VERIFY_OUTPUT" | grep -oP '"logIndex":\s*\K\d+' | head -1 || echo "")
+          
+          echo "rekor_index=$REKOR_INDEX" >> $GITHUB_OUTPUT
+          echo "✅ Signature verified - Rekor log index: $REKOR_INDEX"
+      
+      - name: Generate unified build metadata
+        id: metadata
+        run: |
+          NAME="${{ steps.config.outputs.name }}"
+          VERSION="${{ steps.config.outputs.version }}"
+          RELEASE_IMAGE="${{ steps.enclaver.outputs.release_image }}"
+          DIGEST="${{ steps.enclaver.outputs.digest }}"
+          PCR0="${{ steps.enclaver.outputs.pcr0 }}"
+          PCR1="${{ steps.enclaver.outputs.pcr1 }}"
+          PCR2="${{ steps.enclaver.outputs.pcr2 }}"
+          REKOR_INDEX="${{ steps.sign.outputs.rekor_index }}"
+          
+          cd output
+          
+          # Create unified build-metadata.json
+          cat > build-metadata.json << EOF
+          {
+            "schema_version": "1.0",
+            "app_name": "$NAME",
+            "version": "$VERSION",
+            "image_uri": "${RELEASE_IMAGE}",
+            "image_digest": "${DIGEST}",
+            "source_repo": "${{ steps.config.outputs.repo }}",
+            "source_branch": "${{ steps.config.outputs.branch }}",
+            "source_commit": "${{ steps.clone.outputs.commit_sha }}",
+            "source_commit_short": "${{ steps.clone.outputs.commit_short }}",
+            "source_date_epoch": "${{ steps.epoch.outputs.epoch }}",
+            "build_timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
+            "github_run_id": "${{ github.run_id }}",
+            "github_run_number": "${{ github.run_number }}",
+            "debug_mode": ${{ steps.config.outputs.debug_mode }},
+            "pcr": {
+              "PCR0": "$PCR0",
+              "PCR1": "$PCR1",
+              "PCR2": "$PCR2"
+            },
+            "slsa": {
+              "signed": true,
+              "rekor_log_index": "$REKOR_INDEX",
+              "certificate_issuer": "https://token.actions.githubusercontent.com",
+              "certificate_identity": "https://github.com/${{ github.repository }}/.github/workflows/build-on-merge.yml@${{ github.ref }}",
+              "verification_command": "cosign verify --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' --certificate-oidc-issuer='https://token.actions.githubusercontent.com' ${RELEASE_IMAGE}@${DIGEST}"
+            }
+          }
+          EOF
+          
+          echo "Build metadata saved to build-metadata.json"
+          cat build-metadata.json
+      
       - name: Upload artifacts to S3
         run: |
           APP_NAME="${{ steps.config.outputs.name }}"
@@ -469,12 +536,13 @@ jobs:
           
           echo "Uploading artifacts to S3..."
           aws s3 cp output/pcr.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
-          aws s3 cp output/build-info.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-info.json"
+          aws s3 cp output/build-metadata.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-metadata.json"
           aws s3 cp output/build-output.txt "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-output.txt"
           aws s3 cp output/enclaver.yaml "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/enclaver.yaml"
           
           echo "✅ Artifacts uploaded successfully"
           echo "  PCR: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
+          echo "  Metadata: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-metadata.json"
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -524,6 +592,21 @@ jobs:
             
             **Digest**: `${{ steps.enclaver.outputs.digest }}`
             
+            ## SLSA Provenance & Signature Verification
+            
+            This image is signed using [Sigstore cosign](https://sigstore.dev) with keyless signing.
+            
+            **Rekor Log Index**: `${{ steps.sign.outputs.rekor_index }}`
+            
+            ### Verify Signature
+            
+            ```bash
+            cosign verify \
+              --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+              --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
+              ${{ steps.enclaver.outputs.release_image }}@${{ steps.enclaver.outputs.digest }}
+            ```
+            
             ## Usage
             
             Run on an EC2 instance with Nitro Enclave support:
@@ -539,12 +622,13 @@ jobs:
             
             1. Check the [GitHub Actions run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             2. Verify PCR values match the expected values for your attestation policy
-            3. The build is reproducible - rebuilding from the same commit with the same SOURCE_DATE_EPOCH should produce identical PCR values
+            3. Verify the container signature using cosign (see above)
+            4. The build is reproducible - rebuilding from the same commit with the same SOURCE_DATE_EPOCH should produce identical PCR values
           draft: false
           prerelease: false
           files: |
             output/pcr.json
-            output/build-info.json
+            output/build-metadata.json
             output/enclaver.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
