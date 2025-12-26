@@ -71,10 +71,6 @@ jobs:
             TEMP_JSON=$(mktemp --suffix=.json)
             yq eval -o=json "$file" > "$TEMP_JSON"
             
-            # Debug: Show file content for troubleshooting
-            echo "Temp JSON file: $TEMP_JSON"
-            head -5 "$TEMP_JSON"
-            
             # Validate against schema using temp file (stdin doesn't work reliably in GHA)
             ajv validate -s "$SCHEMA_FILE" -d "$TEMP_JSON" --strict=false
             
@@ -88,6 +84,16 @@ jobs:
             BRANCH=$(echo "$JSON_CONTENT" | jq -r '.branch')
             DIRECTORY=$(echo "$JSON_CONTENT" | jq -r '.build.directory // "."')
             DOCKERFILE=$(echo "$JSON_CONTENT" | jq -r '.build.dockerfile // "Dockerfile"')
+            
+            # Normalize DIRECTORY path:
+            # - Remove leading "./" if present
+            # - Remove trailing "/" if present  
+            # - Handle "." as special case for repo root
+            DIRECTORY=$(echo "$DIRECTORY" | sed 's|^\./||' | sed 's|/$||')
+            if [ -z "$DIRECTORY" ]; then
+              DIRECTORY="."
+            fi
+            echo "Normalized directory: $DIRECTORY"
             
             # Validate directory name matches app name
             DIR_NAME=$(dirname "$file" | xargs basename)
@@ -113,13 +119,15 @@ jobs:
               exit 1
             fi
             
-            # Verify Dockerfile exists in the repository
-            echo "Verifying Dockerfile exists at: $DIRECTORY/$DOCKERFILE"
-            DOCKERFILE_PATH="$DIRECTORY/$DOCKERFILE"
+            # Build Dockerfile path for API check
             if [ "$DIRECTORY" = "." ]; then
               DOCKERFILE_PATH="$DOCKERFILE"
+            else
+              DOCKERFILE_PATH="$DIRECTORY/$DOCKERFILE"
             fi
             
+            # Verify Dockerfile exists in the repository
+            echo "Verifying Dockerfile exists at: $DOCKERFILE_PATH"
             DOCKERFILE_URL="https://api.github.com/repos/$REPO_PATH/contents/$DOCKERFILE_PATH?ref=$BRANCH"
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$DOCKERFILE_URL")
             if [ "$HTTP_CODE" != "200" ]; then
