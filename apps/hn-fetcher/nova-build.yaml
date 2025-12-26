@@ -1,0 +1,83 @@
+# ============================================
+# Nova App Hub Build Configuration - Example
+# ============================================
+# This is an example configuration file.
+# Copy this directory and modify the values for your application.
+# Directory name must match the 'name' field.
+
+# [Required] Application name
+# - Must be lowercase letters, numbers, and hyphens only
+# - Must match the directory name
+name: _example
+
+# [Required] Semantic version (e.g., 1.0.0, 2.1.0-beta)
+version: 1.0.0
+
+# [Required] Public GitHub repository URL
+# - Must start with https://github.com/
+# - Repository must be publicly accessible
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+
+# [Required] Git branch to build from
+branch: main
+
+# [Optional] Specific commit hash to build
+# - If empty, uses the latest commit on the branch
+# - Must be full 40-character SHA
+# commit: abc123def456...
+
+# [Optional] Build configuration
+build:
+  # Directory containing Dockerfile (relative to repo root)
+  # Default: "." (repository root)
+  directory: ./hn-fetcher/
+  
+  # Dockerfile name
+  # Default: "Dockerfile"
+  dockerfile: Dockerfile
+  
+  # Docker build arguments
+  # args:
+  #   - name: NODE_ENV
+  #     value: production
+  #   - name: BUILD_VERSION
+  #     value: "1.0.0"
+
+# [Optional] AWS Nitro Enclave build configuration
+enclave:
+  # Enable debug mode for EIF build
+  # WARNING: Debug mode will produce different PCR values!
+  # Only enable for development/testing
+  # Default: false
+  debug_mode: false
+
+# [Optional] Reproducible build settings
+# These settings help ensure consistent PCR values across builds
+reproducible:
+  # Enable reproducible build mode
+  # Default: true
+  enabled: true
+  
+  # Fixed Unix timestamp for reproducible builds
+  # All timestamps in the build will use this value
+  # If not set, the source commit timestamp will be used
+  # source_date_epoch: 1700000000
+
+# [Optional] Application metadata
+metadata:
+  # Brief description (max 500 characters)
+  description: "Example application for Nova App Hub"
+  
+  # Maintainer email
+  maintainer: maintainer@example.com
+  
+  # Project homepage
+  homepage: https://github.com/example/example-app
+  
+  # License identifier
+  license: MIT
+  
+  # Additional image tags (besides version and commit hash)
+  # tags:
+  #   - latest
+  #   - stable
