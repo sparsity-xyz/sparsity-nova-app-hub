@@ -1,5 +1,5 @@
 # Nova App Hub - Build on Merge Workflow
-# Builds Docker image and EIF directly in GitHub Actions
+# Builds Docker image and creates Enclaver release image with embedded EIF
 
 name: Build and Publish
 
@@ -96,8 +96,8 @@ jobs:
         app: ${{ fromJson(needs.detect-changes.outputs.apps) }}
     
     outputs:
-      image_uri: ${{ steps.build.outputs.image_uri }}
-      image_digest: ${{ steps.build.outputs.digest }}
+      image_uri: ${{ steps.enclaver.outputs.release_image }}
+      image_digest: ${{ steps.enclaver.outputs.digest }}
     
     steps:
       - name: Checkout repository
@@ -126,6 +126,13 @@ jobs:
           
           # Enclave configuration (build-time only)
           DEBUG_MODE=$(yq eval '.enclave.debug_mode // false' "$CONFIG_FILE")
+          
+          # Enclaver configuration
+          INGRESS_PORT=$(yq eval '.enclaver.ingress_port // 8000' "$CONFIG_FILE")
+          API_PORT=$(yq eval '.enclaver.api_port // 9000' "$CONFIG_FILE")
+          AUX_API_PORT=$(yq eval '.enclaver.aux_api_port // 9001' "$CONFIG_FILE")
+          MEMORY_MB=$(yq eval '.enclaver.memory_mb // 1500' "$CONFIG_FILE")
+          EGRESS_ALLOW=$(yq eval '.enclaver.egress_allow // []' "$CONFIG_FILE")
           
           # Reproducible build settings
           REPRODUCIBLE_ENABLED=$(yq eval '.reproducible.enabled // true' "$CONFIG_FILE")
@@ -156,6 +163,11 @@ jobs:
           echo "directory=$DIRECTORY" >> $GITHUB_OUTPUT
           echo "dockerfile=$DOCKERFILE" >> $GITHUB_OUTPUT
           echo "debug_mode=$DEBUG_MODE" >> $GITHUB_OUTPUT
+          echo "ingress_port=$INGRESS_PORT" >> $GITHUB_OUTPUT
+          echo "api_port=$API_PORT" >> $GITHUB_OUTPUT
+          echo "aux_api_port=$AUX_API_PORT" >> $GITHUB_OUTPUT
+          echo "memory_mb=$MEMORY_MB" >> $GITHUB_OUTPUT
+          echo "egress_allow=$EGRESS_ALLOW" >> $GITHUB_OUTPUT
           echo "reproducible_enabled=$REPRODUCIBLE_ENABLED" >> $GITHUB_OUTPUT
           echo "source_date_epoch=$SOURCE_DATE_EPOCH" >> $GITHUB_OUTPUT
           echo "build_args=$BUILD_ARGS" >> $GITHUB_OUTPUT
@@ -238,7 +250,7 @@ jobs:
           aws ecr describe-repositories --repository-names "$REPO_NAME" 2>/dev/null || \
             aws ecr create-repository --repository-name "$REPO_NAME" --image-scanning-configuration scanOnPush=true
       
-      - name: Build and push Docker image (Reproducible)
+      - name: Build application Docker image
         id: build
         run: |
           NAME="${{ steps.config.outputs.name }}"
@@ -248,9 +260,8 @@ jobs:
           DOCKERFILE="${{ steps.config.outputs.dockerfile }}"
           SOURCE_DATE_EPOCH="${{ steps.epoch.outputs.epoch }}"
           
-          # Full image name
-          ECR_IMAGE="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_PREFIX }}/${NAME}"
-          IMAGE_TAG="${VERSION}-${COMMIT_SHORT}"
+          # Local image name (for enclaver to use)
+          LOCAL_IMAGE="${NAME}:${VERSION}"
           
           # Build context path
           BUILD_CONTEXT="source-repo/${DIRECTORY}"
@@ -279,18 +290,16 @@ jobs:
           LABELS="$LABELS --label io.nova.source_date_epoch=${SOURCE_DATE_EPOCH}"
           LABELS="$LABELS --label io.nova.reproducible=true"
           
-          echo "Building Docker image with reproducible settings..."
+          echo "Building application Docker image..."
           echo "  SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
           echo "  Context: $BUILD_CONTEXT"
           echo "  Dockerfile: $DOCKERFILE_PATH"
           
-          # Build with reproducibility flags
+          # Build application image locally
           docker buildx build \
             --platform linux/amd64 \
             --file "$DOCKERFILE_PATH" \
-            --tag "${ECR_IMAGE}:${IMAGE_TAG}" \
-            --tag "${ECR_IMAGE}:${VERSION}" \
-            --tag "${ECR_IMAGE}:${COMMIT_SHORT}" \
+            --tag "${LOCAL_IMAGE}" \
             $LABELS \
             $BUILD_ARGS_FLAGS \
             --provenance=false \
@@ -298,78 +307,112 @@ jobs:
             --load \
             "$BUILD_CONTEXT"
           
-          # Push to ECR
-          docker push "${ECR_IMAGE}:${IMAGE_TAG}"
-          docker push "${ECR_IMAGE}:${VERSION}"
-          docker push "${ECR_IMAGE}:${COMMIT_SHORT}"
+          echo "local_image=${LOCAL_IMAGE}" >> $GITHUB_OUTPUT
           
-          # Get image digest
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${ECR_IMAGE}:${IMAGE_TAG}" | cut -d'@' -f2 || echo "")
-          
-          echo "image_uri=${ECR_IMAGE}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
-          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
-          echo "image=${ECR_IMAGE}" >> $GITHUB_OUTPUT
-          echo "local_image=${ECR_IMAGE}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
-          
-          echo "✅ Docker image built and pushed successfully"
-          echo "   Image: ${ECR_IMAGE}:${IMAGE_TAG}"
-          echo "   Digest: $DIGEST"
+          echo "✅ Application Docker image built successfully"
+          echo "   Image: ${LOCAL_IMAGE}"
       
-      - name: Install Nitro CLI
+      - name: Install Enclaver CLI
         run: |
-          echo "Installing AWS Nitro CLI..."
+          echo "Installing Enclaver CLI..."
           
-          # Install Nitro CLI on Ubuntu
-          sudo apt-get update
-          sudo apt-get install -y amazon-nitro-enclaves-cli
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/sparsity-xyz/enclaver/refs/heads/sparsity/install.sh)"
           
-          nitro-cli --version
-          echo "✅ Nitro CLI installed successfully"
+          enclaver --version
+          echo "✅ Enclaver CLI installed successfully"
       
-      - name: Build EIF
-        id: eif
+      - name: Generate enclaver.yaml
+        id: enclaver_config
         run: |
           NAME="${{ steps.config.outputs.name }}"
           VERSION="${{ steps.config.outputs.version }}"
-          DEBUG_MODE="${{ steps.config.outputs.debug_mode }}"
+          COMMIT_SHORT="${{ steps.clone.outputs.commit_short }}"
           LOCAL_IMAGE="${{ steps.build.outputs.local_image }}"
+          INGRESS_PORT="${{ steps.config.outputs.ingress_port }}"
+          API_PORT="${{ steps.config.outputs.api_port }}"
+          AUX_API_PORT="${{ steps.config.outputs.aux_api_port }}"
+          MEMORY_MB="${{ steps.config.outputs.memory_mb }}"
+          
+          # ECR release image name
+          ECR_IMAGE="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_PREFIX }}/${NAME}"
+          RELEASE_IMAGE="${ECR_IMAGE}:${VERSION}-${COMMIT_SHORT}"
           
           mkdir -p output
           
-          echo "Building Nitro Enclave EIF..."
-          echo "  App Name: $NAME"
-          echo "  Version: $VERSION"
-          echo "  Image: $LOCAL_IMAGE"
-          echo "  Debug Mode: $DEBUG_MODE"
+          echo "Generating enclaver.yaml..."
           
-          # Build EIF with or without debug mode
-          if [ "$DEBUG_MODE" = "true" ]; then
-            echo "Building EIF in DEBUG mode (PCR values will differ)..."
-            nitro-cli build-enclave \
-              --docker-uri "$LOCAL_IMAGE" \
-              --output-file "output/${NAME}.eif" \
-              --debug-mode 2>&1 | tee output/build-output.txt
-          else
-            echo "Building EIF in PRODUCTION mode..."
-            nitro-cli build-enclave \
-              --docker-uri "$LOCAL_IMAGE" \
-              --output-file "output/${NAME}.eif" 2>&1 | tee output/build-output.txt
+          cat > output/enclaver.yaml << EOF
+          version: v1
+          name: "${NAME}"
+          target: "${RELEASE_IMAGE}"
+          sources:
+            app: "${LOCAL_IMAGE}"
+          defaults:
+            memory_mb: ${MEMORY_MB}
+          ingress:
+            - listen_port: ${INGRESS_PORT}
+          api:
+            listen_port: ${API_PORT}
+          aux_api:
+            listen_port: ${AUX_API_PORT}
+          EOF
+          
+          # Add egress rules if specified
+          EGRESS_ALLOW="${{ steps.config.outputs.egress_allow }}"
+          if [ "$EGRESS_ALLOW" != "[]" ] && [ -n "$EGRESS_ALLOW" ]; then
+            echo "egress:" >> output/enclaver.yaml
+            echo "  allow:" >> output/enclaver.yaml
+            # Parse YAML array and add each item
+            echo "$EGRESS_ALLOW" | yq eval '.[]' - | while read domain; do
+              echo "    - $domain" >> output/enclaver.yaml
+            done
           fi
           
-          echo "✅ EIF build completed"
+          echo "Generated enclaver.yaml:"
+          cat output/enclaver.yaml
+          
+          echo "release_image=${RELEASE_IMAGE}" >> $GITHUB_OUTPUT
+          echo "ecr_image=${ECR_IMAGE}" >> $GITHUB_OUTPUT
+      
+      - name: Build Enclaver release image
+        id: enclaver
+        run: |
+          NAME="${{ steps.config.outputs.name }}"
+          VERSION="${{ steps.config.outputs.version }}"
+          COMMIT_SHORT="${{ steps.clone.outputs.commit_short }}"
+          RELEASE_IMAGE="${{ steps.enclaver_config.outputs.release_image }}"
+          ECR_IMAGE="${{ steps.enclaver_config.outputs.ecr_image }}"
+          DEBUG_MODE="${{ steps.config.outputs.debug_mode }}"
+          
+          echo "Building Enclaver release image..."
+          echo "  App Name: $NAME"
+          echo "  Version: $VERSION"
+          echo "  Release Image: $RELEASE_IMAGE"
+          echo "  Debug Mode: $DEBUG_MODE"
+          
+          # Build with enclaver
+          cd output
+          if [ "$DEBUG_MODE" = "true" ]; then
+            echo "Building in DEBUG mode..."
+            enclaver build --file enclaver.yaml --eif-only 2>&1 | tee build-output.txt
+          else
+            enclaver build --file enclaver.yaml --eif-only 2>&1 | tee build-output.txt
+          fi
+          
+          echo "✅ Enclaver build completed"
           
           # Extract PCR values from build output
           echo "Extracting PCR values..."
-          PCR0=$(grep -oP '"PCR0":\s*"\K[^"]+' output/build-output.txt || echo "")
-          PCR1=$(grep -oP '"PCR1":\s*"\K[^"]+' output/build-output.txt || echo "")
-          PCR2=$(grep -oP '"PCR2":\s*"\K[^"]+' output/build-output.txt || echo "")
+          PCR0=$(grep -oP 'PCR0:\s*\K[a-f0-9]+' build-output.txt || grep -oP '"PCR0":\s*"\K[^"]+' build-output.txt || echo "")
+          PCR1=$(grep -oP 'PCR1:\s*\K[a-f0-9]+' build-output.txt || grep -oP '"PCR1":\s*"\K[^"]+' build-output.txt || echo "")
+          PCR2=$(grep -oP 'PCR2:\s*\K[a-f0-9]+' build-output.txt || grep -oP '"PCR2":\s*"\K[^"]+' build-output.txt || echo "")
           
           echo "PCR0: $PCR0"
           echo "PCR1: $PCR1"
           echo "PCR2: $PCR2"
           
           # Create PCR JSON file
-          cat > output/pcr.json << EOF
+          cat > pcr.json << EOF
           {
             "PCR0": "$PCR0",
             "PCR1": "$PCR1",
@@ -379,12 +422,27 @@ jobs:
           
           echo "PCR values saved to pcr.json"
           
+          # Now build the full release image (with EIF embedded)
+          echo "Building full release image..."
+          enclaver build --file enclaver.yaml 2>&1 | tee -a build-output.txt
+          
+          # Push release image to ECR
+          echo "Pushing release image to ECR..."
+          docker push "${RELEASE_IMAGE}"
+          docker tag "${RELEASE_IMAGE}" "${ECR_IMAGE}:${VERSION}"
+          docker push "${ECR_IMAGE}:${VERSION}"
+          docker tag "${RELEASE_IMAGE}" "${ECR_IMAGE}:latest"
+          docker push "${ECR_IMAGE}:latest"
+          
+          # Get image digest
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${RELEASE_IMAGE}" | cut -d'@' -f2 || echo "")
+          
           # Create build info JSON
-          cat > output/build-info.json << EOF
+          cat > build-info.json << EOF
           {
             "app_name": "$NAME",
             "version": "$VERSION",
-            "image_uri": "${{ steps.build.outputs.image_uri }}",
+            "release_image": "${RELEASE_IMAGE}",
             "source_commit": "${{ steps.clone.outputs.commit_sha }}",
             "source_commit_short": "${{ steps.clone.outputs.commit_short }}",
             "source_date_epoch": "${{ steps.epoch.outputs.epoch }}",
@@ -400,12 +458,18 @@ jobs:
           EOF
           
           echo "Build info saved to build-info.json"
-          cat output/build-info.json
+          cat build-info.json
           
           # Set outputs
+          echo "release_image=${RELEASE_IMAGE}" >> $GITHUB_OUTPUT
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
           echo "pcr0=$PCR0" >> $GITHUB_OUTPUT
           echo "pcr1=$PCR1" >> $GITHUB_OUTPUT
           echo "pcr2=$PCR2" >> $GITHUB_OUTPUT
+          
+          echo "✅ Release image pushed successfully"
+          echo "   Image: ${RELEASE_IMAGE}"
+          echo "   Digest: $DIGEST"
       
       - name: Upload artifacts to S3
         run: |
@@ -413,13 +477,12 @@ jobs:
           VERSION="${{ steps.config.outputs.version }}"
           
           echo "Uploading artifacts to S3..."
-          aws s3 cp "output/${APP_NAME}.eif" "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/${APP_NAME}.eif"
           aws s3 cp output/pcr.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
           aws s3 cp output/build-info.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-info.json"
           aws s3 cp output/build-output.txt "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-output.txt"
+          aws s3 cp output/enclaver.yaml "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/enclaver.yaml"
           
           echo "✅ Artifacts uploaded successfully"
-          echo "  EIF: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/${APP_NAME}.eif"
           echo "  PCR: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
       
       - name: Create GitHub Release
@@ -428,7 +491,7 @@ jobs:
           tag_name: ${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}
           name: "${{ steps.config.outputs.name }} v${{ steps.config.outputs.version }}"
           body: |
-            ## AWS Nitro Enclave Build
+            ## AWS Nitro Enclave Build (via Enclaver)
             
             - **Application**: ${{ steps.config.outputs.name }}
             - **Version**: ${{ steps.config.outputs.version }}
@@ -448,6 +511,7 @@ jobs:
             | Setting | Value |
             |---------|-------|
             | Debug Mode | ${{ steps.config.outputs.debug_mode }} |
+            | Memory (MB) | ${{ steps.config.outputs.memory_mb }} |
             
             ## PCR Values (Platform Configuration Registers)
             
@@ -455,23 +519,28 @@ jobs:
             
             | PCR | Value |
             |-----|-------|
-            | **PCR0** | `${{ steps.eif.outputs.pcr0 }}` |
-            | **PCR1** | `${{ steps.eif.outputs.pcr1 }}` |
-            | **PCR2** | `${{ steps.eif.outputs.pcr2 }}` |
+            | **PCR0** | `${{ steps.enclaver.outputs.pcr0 }}` |
+            | **PCR1** | `${{ steps.enclaver.outputs.pcr1 }}` |
+            | **PCR2** | `${{ steps.enclaver.outputs.pcr2 }}` |
             
-            ## Docker Image
+            ## Release Docker Image
+            
+            The release image contains the EIF and Enclaver runtime:
             
             ```
-            ${{ steps.build.outputs.image_uri }}
+            ${{ steps.enclaver.outputs.release_image }}
             ```
             
-            **Digest**: `${{ steps.build.outputs.digest }}`
+            **Digest**: `${{ steps.enclaver.outputs.digest }}`
             
-            ## EIF File
+            ## Usage
             
-            The EIF file is available:
-            - As a release attachment below
-            - In S3: `s3://${{ env.S3_BUCKET }}/builds/${{ steps.config.outputs.name }}/${{ steps.config.outputs.version }}/${{ steps.config.outputs.name }}.eif`
+            Run on an EC2 instance with Nitro Enclave support:
+            
+            ```bash
+            docker pull ${{ steps.enclaver.outputs.release_image }}
+            docker run --rm --privileged ${{ steps.enclaver.outputs.release_image }}
+            ```
             
             ## Verification
             
@@ -483,9 +552,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            output/${{ steps.config.outputs.name }}.eif
             output/pcr.json
             output/build-info.json
+            output/enclaver.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
@@ -514,21 +583,21 @@ jobs:
           
           | PCR | Value |
           |-----|-------|
-          | **PCR0** | \`${{ steps.eif.outputs.pcr0 }}\` |
-          | **PCR1** | \`${{ steps.eif.outputs.pcr1 }}\` |
-          | **PCR2** | \`${{ steps.eif.outputs.pcr2 }}\` |
+          | **PCR0** | \`${{ steps.enclaver.outputs.pcr0 }}\` |
+          | **PCR1** | \`${{ steps.enclaver.outputs.pcr1 }}\` |
+          | **PCR2** | \`${{ steps.enclaver.outputs.pcr2 }}\` |
           
-          ## Docker Image
+          ## Release Docker Image
           
           \`\`\`
-          ${{ steps.build.outputs.image_uri }}
+          ${{ steps.enclaver.outputs.release_image }}
           \`\`\`
           
-          **Digest**: \`${{ steps.build.outputs.digest }}\`
+          **Digest**: \`${{ steps.enclaver.outputs.digest }}\`
           
-          ## EIF File
+          ## Artifacts
           
-          - **S3**: \`s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/${APP_NAME}.eif\`
+          - **S3**: \`s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/\`
           - **GitHub Release**: [${APP_NAME}-v${VERSION}](https://github.com/${{ github.repository }}/releases/tag/${APP_NAME}-v${VERSION})
           
           ## Verification
@@ -561,12 +630,11 @@ jobs:
           echo "### PCR Values" >> $GITHUB_STEP_SUMMARY
           echo "| PCR | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| PCR0 | \`${{ steps.eif.outputs.pcr0 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| PCR1 | \`${{ steps.eif.outputs.pcr1 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| PCR2 | \`${{ steps.eif.outputs.pcr2 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| PCR0 | \`${{ steps.enclaver.outputs.pcr0 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| PCR1 | \`${{ steps.enclaver.outputs.pcr1 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| PCR2 | \`${{ steps.enclaver.outputs.pcr2 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Image" >> $GITHUB_STEP_SUMMARY
           echo "| Type | Location |" >> $GITHUB_STEP_SUMMARY
           echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Image | \`${{ steps.build.outputs.image_uri }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| EIF File | S3 + GitHub Release |" >> $GITHUB_STEP_SUMMARY
+          echo "| Release Image | \`${{ steps.enclaver.outputs.release_image }}\` |" >> $GITHUB_STEP_SUMMARY

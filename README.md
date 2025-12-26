@@ -1,10 +1,10 @@
 # Nova App Hub
 
-A centralized, transparent, and trustworthy build platform for AWS Nitro Enclave applications.
+A centralized, transparent, and trustworthy build platform for AWS Nitro Enclave applications using [Enclaver](https://github.com/sparsity-xyz/enclaver).
 
 ## Overview
 
-Nova App Hub enables developers to build their applications into AWS Nitro Enclave EIF (Enclave Image File) format through a transparent, auditable process. All builds are reproducible, ensuring consistent PCR (Platform Configuration Register) values for remote attestation.
+Nova App Hub enables developers to build their applications into AWS Nitro Enclave format through a transparent, auditable process. All builds are reproducible, ensuring consistent PCR (Platform Configuration Register) values for remote attestation.
 
 ### Key Features
 
@@ -13,6 +13,7 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 - **Trustworthy**: Source code and configurations are version-controlled and reviewed
 - **Automated**: PR merge triggers automatic build pipeline
 - **Verifiable**: Each release includes PCR values, source commit, and build artifacts
+- **Enclaver-Powered**: Uses [Enclaver](https://github.com/sparsity-xyz/enclaver) for enclave packaging and runtime
 
 ## Architecture
 
@@ -25,17 +26,17 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 │  │                                                                           │ │
 │  │  1. Developer PR        2. Validation         3. Docker Build            │ │
 │  │     ┌─────────┐           ┌─────────┐           ┌─────────────┐          │ │
-│  │     │  Add    │ ────────▶ │ Schema  │ ────────▶ │ Reproducible│          │ │
-│  │     │ config  │           │ Check   │           │ Docker Build│          │ │
-│  │     │  .yaml  │           │ Repo    │           │ Push to ECR │          │ │
+│  │     │  Add    │ ────────▶ │ Schema  │ ────────▶ │ Build App   │          │ │
+│  │     │ config  │           │ Check   │           │ Docker Image│          │ │
+│  │     │  .yaml  │           │ Repo    │           │             │          │ │
 │  │     └─────────┘           └─────────┘           └─────────────┘          │ │
 │  │                                                        │                  │ │
 │  │                                                        ▼                  │ │
 │  │     ┌─────────────────┐      ┌─────────────┐      ┌─────────────┐        │ │
-│  │     │  Upload EIF     │ ◀─── │ nitro-cli   │ ◀─── │ Pull Docker │        │ │
-│  │     │  + PCR values   │      │ build-enclave│     │   Image     │        │ │
-│  │     │  to S3 + Release│      └─────────────┘      └─────────────┘        │ │
-│  │     └─────────────────┘                                                  │ │
+│  │     │  Push Release   │ ◀─── │  Enclaver   │ ◀─── │  Generate   │        │ │
+│  │     │  Image to ECR   │      │    Build    │      │enclaver.yaml│        │ │
+│  │     │  (EIF embedded) │      │  (EIF + RT) │      └─────────────┘        │ │
+│  │     └─────────────────┘      └─────────────┘                             │ │
 │  └───────────────────────────────────────────────────────────────────────────┘ │
 │                                                                                │
 └────────────────────────────────────────────────────────────────────────────────┘
@@ -76,6 +77,15 @@ build:
 enclave:
   debug_mode: false           # WARNING: Debug mode changes PCR values!
 
+# Optional: Enclaver configuration
+enclaver:
+  ingress_port: 8000          # Your app's HTTP port
+  api_port: 9000              # Internal API port (attestation, signing)
+  aux_api_port: 9001          # Auxiliary API port
+  memory_mb: 1500             # Enclave memory allocation
+  egress_allow:               # Domains allowed for egress
+    - api.example.com
+
 # Optional: Reproducible build settings
 reproducible:
   enabled: true
@@ -100,9 +110,9 @@ metadata:
 
 After build completes:
 
-- **EIF File**: Available in GitHub Release and S3
-- **PCR Values**: Recorded in `pcr.json` alongside EIF
-- **Docker Image**: Available in AWS ECR
+- **Release Image**: Docker image with embedded EIF in AWS ECR
+- **PCR Values**: Recorded in `pcr.json`
+- **Build Info**: Complete build metadata in `build-info.json`
 
 ## Configuration Reference
 
@@ -124,6 +134,11 @@ After build completes:
 | `build.dockerfile` | string | `Dockerfile` | Dockerfile name |
 | `build.args` | array | `[]` | Docker build arguments |
 | `enclave.debug_mode` | boolean | `false` | Enable debug mode (changes PCR!) |
+| `enclaver.ingress_port` | integer | `8000` | Ingress traffic port |
+| `enclaver.api_port` | integer | `9000` | Internal API port |
+| `enclaver.aux_api_port` | integer | `9001` | Auxiliary API port |
+| `enclaver.memory_mb` | integer | `1500` | Memory allocation (MB) |
+| `enclaver.egress_allow` | array | `[]` | Allowed egress domains |
 | `reproducible.enabled` | boolean | `true` | Enable reproducible builds |
 | `reproducible.source_date_epoch` | integer | (commit time) | Fixed timestamp |
 
@@ -184,9 +199,9 @@ Each build creates a GitHub Release with:
 
 - Tag: `<app-name>-v<version>`
 - Attachments:
-  - `<app-name>.eif` - Enclave Image File
   - `pcr.json` - PCR values
   - `build-info.json` - Build metadata
+  - `enclaver.yaml` - Generated enclaver configuration
 
 ### PCR.json Format
 
@@ -198,14 +213,29 @@ Each build creates a GitHub Release with:
 }
 ```
 
+### Release Docker Image
+
+The release image contains everything needed to run the enclave:
+- Enclaver runtime (`enclaver-run`)
+- Nitro CLI
+- EIF file (`/enclave/application.eif`)
+- Configuration (`/enclave/enclaver.yaml`)
+
+Run on an EC2 instance with Nitro Enclave support:
+
+```bash
+docker pull <ECR_REGISTRY>/nova-apps/<app-name>:<version>
+docker run --rm --privileged <ECR_REGISTRY>/nova-apps/<app-name>:<version>
+```
+
 ### S3 Artifacts
 
 ```
 s3://nova-app-hub-artifacts/builds/<app-name>/<version>/
-├── <app-name>.eif
 ├── pcr.json
 ├── build-info.json
-└── build-output.txt
+├── build-output.txt
+└── enclaver.yaml
 ```
 
 ## AWS Infrastructure Setup
@@ -262,7 +292,7 @@ nova-app-hub/
 ├── .github/
 │   └── workflows/
 │       ├── pr-validation.yml       # PR validation
-│       └── build-on-merge.yml      # Build pipeline
+│       └── build-on-merge.yml      # Build pipeline (Enclaver)
 ├── apps/
 │   ├── _example/                   # Example configuration
 │   │   └── nova-build.yaml
@@ -339,6 +369,15 @@ Possible causes:
 ### Q: What instance types support Nitro Enclaves?
 
 Most newer instance types: `m5.xlarge`, `c5.xlarge`, `r5.xlarge`, etc. with `.metal` variants having best support.
+
+### Q: How does Enclaver work?
+
+Enclaver packages your application Docker image into a release image containing:
+1. The EIF (Enclave Image File)
+2. Odyn supervisor for ingress/egress, attestation, encryption
+3. Nitro CLI for enclave lifecycle management
+
+See [Enclaver documentation](https://github.com/sparsity-xyz/enclaver) for details.
 
 ## Contributing
 
