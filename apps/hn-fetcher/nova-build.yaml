@@ -11,7 +11,7 @@
 name: hn-fetcher
 
 # [Required] Semantic version (e.g., 1.0.0, 2.1.0-beta)
-version: 1.0.1
+version: 1.0.2
 
 # [Required] Public GitHub repository URL
 # - Must start with https://github.com/
