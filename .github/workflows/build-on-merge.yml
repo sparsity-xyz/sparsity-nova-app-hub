@@ -8,6 +8,12 @@ on:
     branches: [main]
     paths:
       - 'apps/**'
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'App directory name to build (e.g., hn-fetcher)'
+        required: true
+        type: string
 
 env:
   # AWS Configuration (from CloudFormation stack outputs)
@@ -34,35 +40,50 @@ jobs:
       - name: Detect changed apps
         id: detect
         run: |
-          # Get changed files in this push
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD -- 'apps/')
-          
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-          
-          # Extract unique app directories (exclude _example)
-          APPS=()
-          for file in $CHANGED_FILES; do
-            if [[ "$file" =~ ^apps/([^/]+)/nova-build\.yaml$ ]]; then
-              APP_NAME="${BASH_REMATCH[1]}"
-              # Skip example directory
-              if [ "$APP_NAME" != "_example" ]; then
-                if [[ ! " ${APPS[@]} " =~ " ${APP_NAME} " ]]; then
-                  APPS+=("$APP_NAME")
+          # Check if manually triggered with app_name input
+          if [ -n "${{ github.event.inputs.app_name }}" ]; then
+            APP_NAME="${{ github.event.inputs.app_name }}"
+            echo "Manual trigger for app: $APP_NAME"
+            
+            # Verify the app exists
+            if [ -f "apps/$APP_NAME/nova-build.yaml" ]; then
+              echo "apps=[\"$APP_NAME\"]" >> $GITHUB_OUTPUT
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "ERROR: App not found: apps/$APP_NAME/nova-build.yaml"
+              exit 1
+            fi
+          else
+            # Auto-detect from git diff (push trigger)
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD -- 'apps/')
+            
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            
+            # Extract unique app directories (exclude _example)
+            APPS=()
+            for file in $CHANGED_FILES; do
+              if [[ "$file" =~ ^apps/([^/]+)/nova-build\.yaml$ ]]; then
+                APP_NAME="${BASH_REMATCH[1]}"
+                # Skip example directory
+                if [ "$APP_NAME" != "_example" ]; then
+                  if [[ ! " ${APPS[@]} " =~ " ${APP_NAME} " ]]; then
+                    APPS+=("$APP_NAME")
+                  fi
                 fi
               fi
+            done
+            
+            if [ ${#APPS[@]} -eq 0 ]; then
+              echo "No app changes detected"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo "apps=[]" >> $GITHUB_OUTPUT
+            else
+              echo "Apps to build: ${APPS[*]}"
+              JSON_APPS=$(printf '%s\n' "${APPS[@]}" | jq -R . | jq -s -c .)
+              echo "apps=$JSON_APPS" >> $GITHUB_OUTPUT
+              echo "has_changes=true" >> $GITHUB_OUTPUT
             fi
-          done
-          
-          if [ ${#APPS[@]} -eq 0 ]; then
-            echo "No app changes detected"
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "apps=[]" >> $GITHUB_OUTPUT
-          else
-            echo "Apps to build: ${APPS[*]}"
-            JSON_APPS=$(printf '%s\n' "${APPS[@]}" | jq -R . | jq -s -c .)
-            echo "apps=$JSON_APPS" >> $GITHUB_OUTPUT
-            echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
   build-docker:
