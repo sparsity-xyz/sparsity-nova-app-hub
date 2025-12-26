@@ -244,31 +244,11 @@ Resources:
                   else
                     nitro-cli build-enclave --docker-uri $IMAGE_URI --output-file output/${APP_NAME}.eif 2>&1 | tee output/build-output.txt
                   fi
-                - |
-                  # Extract PCR values
-                  PCR0=$(grep -oP '"PCR0":\s*"\K[^"]+' output/build-output.txt || echo "")
-                  PCR1=$(grep -oP '"PCR1":\s*"\K[^"]+' output/build-output.txt || echo "")
-                  PCR2=$(grep -oP '"PCR2":\s*"\K[^"]+' output/build-output.txt || echo "")
-                  
-                  cat > output/pcr.json << EOF
-                  {
-                    "PCR0": "$PCR0",
-                    "PCR1": "$PCR1",
-                    "PCR2": "$PCR2"
-                  }
-                  EOF
-                - |
-                  cat > output/build-info.json << EOF
-                  {
-                    "app_name": "$APP_NAME",
-                    "version": "$APP_VERSION",
-                    "image_uri": "$IMAGE_URI",
-                    "source_commit": "$SOURCE_COMMIT",
-                    "debug_mode": $DEBUG_MODE,
-                    "github_run_id": "$GITHUB_RUN_ID",
-                    "build_timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-                  }
-                  EOF
+                - PCR0=$(grep -oP '"PCR0"\:\s*"\K[^"]+' output/build-output.txt || echo "")
+                - PCR1=$(grep -oP '"PCR1"\:\s*"\K[^"]+' output/build-output.txt || echo "")
+                - PCR2=$(grep -oP '"PCR2"\:\s*"\K[^"]+' output/build-output.txt || echo "")
+                - echo "{\"PCR0\":\"$PCR0\",\"PCR1\":\"$PCR1\",\"PCR2\":\"$PCR2\"}" > output/pcr.json
+                - echo "{\"app_name\":\"$APP_NAME\",\"version\":\"$APP_VERSION\",\"image_uri\":\"$IMAGE_URI\",\"source_commit\":\"$SOURCE_COMMIT\",\"debug_mode\":$DEBUG_MODE,\"github_run_id\":\"$GITHUB_RUN_ID\",\"build_timestamp\":\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > output/build-info.json
             
             post_build:
               commands:
