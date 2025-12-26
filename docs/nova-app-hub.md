@@ -38,6 +38,8 @@ aws cloudformation describe-stacks \
 |--------|-------|
 | `AWS_ACCESS_KEY_ID` | From CloudFormation output |
 | `AWS_SECRET_ACCESS_KEY` | From CloudFormation output |
+| `DOCKERHUB_USERNAME` | Docker Hub username (to avoid rate limits) |
+| `DOCKERHUB_TOKEN` | Docker Hub access token ([create here](https://hub.docker.com/settings/security)) |
 
 4. Update workflow environment variables in `.github/workflows/build-on-merge.yml`:
 

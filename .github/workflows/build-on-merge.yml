@@ -323,6 +323,13 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.7.0
       
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true  # Continue even if Docker Hub login fails
+      
       - name: Install Enclaver CLI
         run: |
           echo "Installing Enclaver CLI..."
