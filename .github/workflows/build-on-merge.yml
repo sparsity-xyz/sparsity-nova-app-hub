@@ -390,14 +390,9 @@ jobs:
           echo "  Release Image: $RELEASE_IMAGE"
           echo "  Debug Mode: $DEBUG_MODE"
           
-          # Build with enclaver
+          # Build with enclaver (produces release image with embedded EIF)
           cd output
-          if [ "$DEBUG_MODE" = "true" ]; then
-            echo "Building in DEBUG mode..."
-            enclaver build --file enclaver.yaml --eif-only 2>&1 | tee build-output.txt
-          else
-            enclaver build --file enclaver.yaml --eif-only 2>&1 | tee build-output.txt
-          fi
+          enclaver build --file enclaver.yaml 2>&1 | tee build-output.txt
           
           echo "✅ Enclaver build completed"
           
@@ -421,10 +416,6 @@ jobs:
           EOF
           
           echo "PCR values saved to pcr.json"
-          
-          # Now build the full release image (with EIF embedded)
-          echo "Building full release image..."
-          enclaver build --file enclaver.yaml 2>&1 | tee -a build-output.txt
           
           # Push release image to ECR
           echo "Pushing release image to ECR..."
