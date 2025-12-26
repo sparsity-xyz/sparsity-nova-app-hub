@@ -203,8 +203,7 @@ Resources:
           - Name: S3_BUCKET
             Value: !Ref ArtifactsBucket
       Source:
-        Type: S3
-        Location: !Sub '${ArtifactsBucket}/codebuild-source/buildspec.yml'
+        Type: NO_SOURCE
         BuildSpec: |
           version: 0.2
           
