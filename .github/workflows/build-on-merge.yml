@@ -738,7 +738,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "Sending success callback to Nova Platform..."
-          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/v1/apps/builds/callback" \
+          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/builds/callback" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
@@ -760,7 +760,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "Sending failure callback to Nova Platform..."
-          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/v1/apps/builds/callback" \
+          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/builds/callback" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
