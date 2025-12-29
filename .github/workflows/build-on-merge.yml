@@ -10,9 +10,17 @@ on:
       - 'apps/**'
   workflow_dispatch:
     inputs:
-      app_name:
-        description: 'App directory name to build (e.g., hn-fetcher)'
+      app_dir:
+        description: 'App directory name to build (e.g., 123-hn-fetcher)'
         required: true
+        type: string
+      app_id:
+        description: 'App ID from Nova Platform (for callback)'
+        required: false
+        type: string
+      build_id:
+        description: 'Build ID from Nova Platform (for callback)'
+        required: false
         type: string
 
 env:
@@ -39,17 +47,17 @@ jobs:
       - name: Detect changed apps
         id: detect
         run: |
-          # Check if manually triggered with app_name input
-          if [ -n "${{ github.event.inputs.app_name }}" ]; then
-            APP_NAME="${{ github.event.inputs.app_name }}"
-            echo "Manual trigger for app: $APP_NAME"
+          # Check if manually triggered with app_dir input
+          if [ -n "${{ github.event.inputs.app_dir }}" ]; then
+            APP_DIR="${{ github.event.inputs.app_dir }}"
+            echo "Manual trigger for app: $APP_DIR"
             
             # Verify the app exists
-            if [ -f "apps/$APP_NAME/nova-build.yaml" ]; then
-              echo "apps=[\"$APP_NAME\"]" >> $GITHUB_OUTPUT
+            if [ -f "apps/$APP_DIR/nova-build.yaml" ]; then
+              echo "apps=[\"$APP_DIR\"]" >> $GITHUB_OUTPUT
               echo "has_changes=true" >> $GITHUB_OUTPUT
             else
-              echo "ERROR: App not found: apps/$APP_NAME/nova-build.yaml"
+              echo "ERROR: App not found: apps/$APP_DIR/nova-build.yaml"
               exit 1
             fi
           else
@@ -720,3 +728,43 @@ jobs:
           echo "| Type | Location |" >> $GITHUB_STEP_SUMMARY
           echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
           echo "| Release Image | \`${{ steps.enclaver.outputs.release_image }}\` |" >> $GITHUB_STEP_SUMMARY
+      
+      # Callback to Nova Platform (optional - does not fail the build)
+      - name: Callback to Nova Platform (Success)
+        if: success() && github.event.inputs.app_id != '' && github.event.inputs.build_id != ''
+        continue-on-error: true
+        run: |
+          echo "Sending success callback to Nova Platform..."
+          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/v1/apps/builds/callback" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
+            -d '{
+              "app_id": ${{ github.event.inputs.app_id }},
+              "build_id": ${{ github.event.inputs.build_id }},
+              "status": "success",
+              "image_uri": "${{ steps.enclaver.outputs.release_image }}",
+              "image_digest": "${{ steps.enclaver.outputs.digest }}",
+              "git_commit": "${{ steps.clone.outputs.commit_sha }}",
+              "git_commit_short": "${{ steps.clone.outputs.commit_short }}",
+              "pcr0": "${{ steps.enclaver.outputs.pcr0 }}",
+              "pcr1": "${{ steps.enclaver.outputs.pcr1 }}",
+              "pcr2": "${{ steps.enclaver.outputs.pcr2 }}",
+              "github_run_id": "${{ github.run_id }}"
+            }' || echo "Callback failed, but continuing..."
+      
+      - name: Callback to Nova Platform (Failure)
+        if: failure() && github.event.inputs.app_id != '' && github.event.inputs.build_id != ''
+        continue-on-error: true
+        run: |
+          echo "Sending failure callback to Nova Platform..."
+          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/v1/apps/builds/callback" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
+            -d '{
+              "app_id": ${{ github.event.inputs.app_id }},
+              "build_id": ${{ github.event.inputs.build_id }},
+              "status": "failed",
+              "error_message": "Build failed. See GitHub Actions run ${{ github.run_id }} for details.",
+              "github_run_id": "${{ github.run_id }}"
+            }' || echo "Callback failed, but continuing..."
+
