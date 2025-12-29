@@ -1,0 +1,16 @@
+version: v1
+name: hn-fetcher
+target: nova-apps/hn-fetcher:1.0.5
+sources:
+  app: hn-fetcher:1.0.5
+defaults:
+  cpu_count: 2
+  memory_mb: 4096
+ingress:
+- listen_port: 8080
+egress:
+  allow: []
+api:
+  listen_port: 9000
+aux_api:
+  listen_port: 9001
