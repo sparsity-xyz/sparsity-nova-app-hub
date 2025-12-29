@@ -1,9 +1,9 @@
 name: hn-fetcher
-version: 1.0.5
+version: 1.0.6
 repo: https://github.com/sparsity-xyz/sparsity-nova-examples
 branch: main
 build:
-  directory: /
+  directory: hn-fetcher
   dockerfile: Dockerfile
 enclave:
   debug_mode: false
