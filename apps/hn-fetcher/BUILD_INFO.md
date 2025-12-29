@@ -7,8 +7,8 @@
 | Property | Value |
 |----------|-------|
 | **Version** | 1.0.3 |
-| **Build Time** | 2025-12-26T09:26:40Z |
-| **Build Number** | 11 |
+| **Build Time** | 2025-12-29T00:46:25Z |
+| **Build Number** | 14 |
 | **Source Commit** | `e93a421` |
 | **SOURCE_DATE_EPOCH** | `1766465894` |
 
@@ -16,9 +16,9 @@
 
 | PCR | Value |
 |-----|-------|
-| **PCR0** | `86ae03eb195bca9f6543f521952f66bedc0c0551b83e149ebceeac0afe2df5ff244851b320ffd1f87b02beff38226285` |
+| **PCR0** | `13683c2bf7684d9f65b4029b3d75f7323eb0902f5eb06232e42a49152fc1c222efbebf04ee9436ef467fb46344ad2e44` |
 | **PCR1** | `4b4d5b3661b3efc12920900c80e126e4ce783c522de6c02a2a5bf7af3a2b9327b86776f188e4be1c1c404a129dbda493` |
-| **PCR2** | `6b7285d91313099ae11ea522da301a38a67a6356964e1f65720c14cb741f3f14f9b27d2008a645e03d55f2175671efd3` |
+| **PCR2** | `4f9a28f3f0cbc942a4d8d5f109f68b7c279227abace86efeb8e18051aceb60f904565e8f608f47f3af2e79ed4a364114` |
 
 ## Release Docker Image
 
@@ -26,7 +26,7 @@
 004118891089.dkr.ecr.us-west-1.amazonaws.com/nova-apps/hn-fetcher:1.0.3-e93a421
 ```
 
-**Digest**: `sha256:ee8d1b8d003c632fef7780224f1d0b7e320ae5335271a45cac34d2d5db6a55be`
+**Digest**: `sha256:f6a6f8fe6f275fccb8ec62a6aaaa3f35786866db2a2bc40c5d105f9b2aa6603b`
 
 ## Artifacts
 
@@ -35,4 +35,4 @@
 
 ## Verification
 
-To verify this build, check the [GitHub Actions run](https://github.com/sparsity-xyz/sparsity-nova-app-hub/actions/runs/20520002217).
+To verify this build, check the [GitHub Actions run](https://github.com/sparsity-xyz/sparsity-nova-app-hub/actions/runs/20561967296).
