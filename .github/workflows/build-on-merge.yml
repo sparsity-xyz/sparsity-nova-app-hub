@@ -4,10 +4,7 @@
 name: Build and Publish
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'apps/**'
+  # Only triggered via API from Nova Platform (no push trigger)
   workflow_dispatch:
     inputs:
       app_dir:
@@ -696,6 +693,12 @@ jobs:
           EOF
           
           echo "✅ Build info updated"
+      
+      - name: Pull latest changes before commit
+        run: |
+          # Pull latest changes to avoid conflicts with commits made by Nova Platform API
+          git fetch origin main
+          git rebase origin/main || git merge origin/main --no-edit
       
       - name: Commit build info
         uses: stefanzweifel/git-auto-commit-action@v5
