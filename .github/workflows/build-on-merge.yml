@@ -245,6 +245,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true  # Continue even if Docker Hub login fails
+      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -328,12 +335,6 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.7.0
       
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        continue-on-error: true  # Continue even if Docker Hub login fails
       
       - name: Install Enclaver CLI
         run: |
@@ -415,9 +416,35 @@ jobs:
           
           # Build with enclaver (produces release image with embedded EIF)
           cd output
-          enclaver build --file enclaver.yaml 2>&1 | tee build-output.txt
           
-          echo "✅ Enclaver build completed"
+          # Run enclaver build and capture exit code
+          set +e
+          enclaver build --file enclaver.yaml 2>&1 | tee build-output.txt
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          
+          # Check for errors in output (enclaver may not always return non-zero on failure)
+          if grep -q "Error:" build-output.txt; then
+            echo "❌ Enclaver build FAILED - errors detected in output:"
+            grep "Error:" build-output.txt
+            exit 1
+          fi
+          
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "❌ Enclaver build FAILED with exit code: $BUILD_EXIT_CODE"
+            cat build-output.txt
+            exit 1
+          fi
+          
+          # Verify the release image was actually created
+          if ! docker image inspect "${RELEASE_IMAGE}" > /dev/null 2>&1; then
+            echo "❌ Enclaver build FAILED - release image not found locally: ${RELEASE_IMAGE}"
+            echo "Build output:"
+            cat build-output.txt
+            exit 1
+          fi
+          
+          echo "✅ Enclaver build completed successfully"
           
           # Extract PCR values from build output
           echo "Extracting PCR values..."
