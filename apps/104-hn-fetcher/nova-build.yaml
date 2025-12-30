@@ -1,5 +1,5 @@
 name: hn-fetcher
-version: 1.1.1
+version: 1.1.2
 repo: https://github.com/sparsity-xyz/sparsity-nova-examples
 branch: main
 build:
