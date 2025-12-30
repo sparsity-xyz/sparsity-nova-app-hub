@@ -1,8 +1,8 @@
 version: v1
 name: hn-fetcher
-target: nova-apps/hn-fetcher:1.1.0
+target: nova-apps/hn-fetcher:1.1.1
 sources:
-  app: hn-fetcher:1.1.0
+  app: hn-fetcher:1.1.1
 defaults:
   cpu_count: 2
   memory_mb: 4096
