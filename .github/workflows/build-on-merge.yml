@@ -704,7 +704,8 @@ jobs:
         continue-on-error: true
         run: |
           echo "Sending success callback to Nova Platform..."
-          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/builds/callback" \
+          API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
+          curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
@@ -720,13 +721,16 @@ jobs:
               "pcr2": "${{ steps.enclaver.outputs.pcr2 }}",
               "github_run_id": "${{ github.run_id }}"
             }' || echo "Callback failed, but continuing..."
+        env:
+          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
       
       - name: Callback to Nova Platform (Failure)
         if: failure() && github.event.inputs.app_id != '' && github.event.inputs.build_id != ''
         continue-on-error: true
         run: |
           echo "Sending failure callback to Nova Platform..."
-          curl -X POST "${{ secrets.NOVA_PLATFORM_API_URL }}/api/builds/callback" \
+          API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
+          curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
@@ -736,4 +740,5 @@ jobs:
               "error_message": "Build failed. See GitHub Actions run ${{ github.run_id }} for details.",
               "github_run_id": "${{ github.run_id }}"
             }' || echo "Callback failed, but continuing..."
-
+        env:
+          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
