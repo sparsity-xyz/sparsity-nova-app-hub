@@ -18,7 +18,7 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 
 ### Using Nova Platform (Recommended)
 
-The easiest way to build your application is through [Nova Platform](https://nova.sparsity.xyz):
+The easiest way to build your application is through [Nova Platform](https://sparsity.cloud):
 
 1. Create an app on Nova Platform
 2. Configure your repository URL and enclaver settings
