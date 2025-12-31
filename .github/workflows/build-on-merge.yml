@@ -136,10 +136,6 @@ jobs:
           DIRECTORY=$(yq eval '.build.directory // "."' "$CONFIG_FILE")
           DOCKERFILE=$(yq eval '.build.dockerfile // "Dockerfile"' "$CONFIG_FILE")
           
-          # Reproducible build settings
-          REPRODUCIBLE_ENABLED=$(yq eval '.reproducible.enabled // true' "$CONFIG_FILE")
-          SOURCE_DATE_EPOCH=$(yq eval '.reproducible.source_date_epoch // ""' "$CONFIG_FILE")
-          
           # Metadata
           DESCRIPTION=$(yq eval '.metadata.description // ""' "$CONFIG_FILE")
           MAINTAINER=$(yq eval '.metadata.maintainer // ""' "$CONFIG_FILE")
@@ -163,8 +159,6 @@ jobs:
           echo "ref=$REF" >> $GITHUB_OUTPUT
           echo "directory=$DIRECTORY" >> $GITHUB_OUTPUT
           echo "dockerfile=$DOCKERFILE" >> $GITHUB_OUTPUT
-          echo "reproducible_enabled=$REPRODUCIBLE_ENABLED" >> $GITHUB_OUTPUT
-          echo "source_date_epoch=$SOURCE_DATE_EPOCH" >> $GITHUB_OUTPUT
           echo "build_args=$BUILD_ARGS" >> $GITHUB_OUTPUT
           echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
           echo "maintainer=$MAINTAINER" >> $GITHUB_OUTPUT
@@ -220,14 +214,9 @@ jobs:
       - name: Determine SOURCE_DATE_EPOCH
         id: epoch
         run: |
-          # Use configured epoch, or fall back to commit timestamp
-          if [ -n "${{ steps.config.outputs.source_date_epoch }}" ]; then
-            EPOCH="${{ steps.config.outputs.source_date_epoch }}"
-            echo "Using configured SOURCE_DATE_EPOCH: $EPOCH"
-          else
-            EPOCH="${{ steps.clone.outputs.commit_timestamp }}"
-            echo "Using commit timestamp as SOURCE_DATE_EPOCH: $EPOCH"
-          fi
+          # Use commit timestamp for SOURCE_DATE_EPOCH
+          EPOCH="${{ steps.clone.outputs.commit_timestamp }}"
+          echo "Using commit timestamp as SOURCE_DATE_EPOCH: $EPOCH"
           echo "epoch=$EPOCH" >> $GITHUB_OUTPUT
       
       - name: Set up Docker Buildx
@@ -296,7 +285,6 @@ jobs:
           LABELS="$LABELS --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           LABELS="$LABELS --label org.opencontainers.image.title=${NAME}"
           LABELS="$LABELS --label io.nova.source_date_epoch=${SOURCE_DATE_EPOCH}"
-          LABELS="$LABELS --label io.nova.reproducible=true"
           
           echo "Building application Docker image..."
           echo "  SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
@@ -628,7 +616,6 @@ jobs:
             1. Check the [GitHub Actions run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             2. Verify PCR values match the expected values for your attestation policy
             3. Verify the container signature using cosign (see above)
-            4. The build is reproducible - rebuilding from the same commit with the same SOURCE_DATE_EPOCH should produce identical PCR values
           draft: false
           prerelease: false
           files: |

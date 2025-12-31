@@ -119,8 +119,7 @@ After build completes:
 | `metadata.description` | string | - | Brief description of the application |
 | `metadata.maintainer` | string | - | Maintainer email address |
 | `metadata.license` | string | - | License identifier (e.g., MIT) |
-| `reproducible.enabled` | boolean | `true` | Enable reproducible build mode |
-| `reproducible.source_date_epoch` | integer | - | Fixed Unix timestamp for reproducible builds |
+
 
 ### Enclaver Configuration (enclaver.yaml)
 
@@ -193,9 +192,9 @@ Modify the `nova-build.yaml` and submit a new PR. Update the `version` field.
 ### Q: Why are my PCR values different?
 
 Possible causes:
-- Different `SOURCE_DATE_EPOCH`
 - Non-deterministic Dockerfile operations
 - Different base image (not pinned by digest)
+- Timestamps or other non-deterministic elements in the build
 
 ### Q: What instance types support Nitro Enclaves?
 

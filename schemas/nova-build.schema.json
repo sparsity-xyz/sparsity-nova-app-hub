@@ -106,23 +106,6 @@
           }
         }
       }
-    },
-    "reproducible": {
-      "type": "object",
-      "description": "Reproducible build settings for consistent PCR values",
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Enable reproducible build mode",
-          "default": true
-        },
-        "source_date_epoch": {
-          "type": "integer",
-          "description": "Fixed Unix timestamp for reproducible builds. All timestamps in the build will use this value.",
-          "minimum": 0
-        }
-      }
     }
   }
 }

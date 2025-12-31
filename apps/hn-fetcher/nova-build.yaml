@@ -51,17 +51,6 @@ enclave:
   # Default: false
   debug_mode: false
 
-# [Optional] Reproducible build settings
-# These settings help ensure consistent PCR values across builds
-reproducible:
-  # Enable reproducible build mode
-  # Default: true
-  enabled: true
-  
-  # Fixed Unix timestamp for reproducible builds
-  # All timestamps in the build will use this value
-  # If not set, the source commit timestamp will be used
-  # source_date_epoch: 1700000000
 
 # [Optional] Enclaver configuration
 # Configure how the enclave runtime operates
