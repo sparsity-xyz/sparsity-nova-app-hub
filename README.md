@@ -156,8 +156,8 @@ Each build creates a GitHub Release with:
 Run on an EC2 instance with Nitro Enclave support:
 
 ```bash
-docker pull <ECR_REGISTRY>/nova-apps/<app-name>:<version>
-docker run --rm --privileged <ECR_REGISTRY>/nova-apps/<app-name>:<version>
+docker pull public.ecr.aws/d4t4u8d2/sparsity-xyz/nova-apps/<app-name>:<version>
+docker run --rm --privileged public.ecr.aws/d4t4u8d2/sparsity-xyz/nova-apps/<app-name>:<version>
 ```
 
 ## SLSA Provenance & Verification
@@ -170,7 +170,7 @@ All container images are signed using [Sigstore cosign](https://sigstore.dev) wi
 cosign verify \
   --certificate-identity-regexp='https://github.com/sparsity-xyz/sparsity-nova-app-hub/.*' \
   --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
-  <ECR_REGISTRY>/nova-apps/<app-name>:<version>@<digest>
+  public.ecr.aws/d4t4u8d2/sparsity-xyz/nova-apps/<app-name>:<version>@<digest>
 ```
 
 ### Verify Build Artifacts

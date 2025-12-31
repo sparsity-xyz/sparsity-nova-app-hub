@@ -21,10 +21,10 @@ on:
         type: string
 
 env:
-  # AWS Configuration (from CloudFormation stack outputs)
-  AWS_REGION: us-west-1
-  ECR_REGISTRY: 004118891089.dkr.ecr.us-west-1.amazonaws.com
-  ECR_REPOSITORY_PREFIX: nova-apps
+  # AWS Configuration
+  AWS_REGION: us-east-1
+  PUBLIC_ECR_REGISTRY: public.ecr.aws/d4t4u8d2
+  ECR_REPOSITORY_PREFIX: sparsity-xyz/nova-apps
   S3_BUCKET: nova-app-hub-artifacts-004118891089
 
 jobs:
@@ -236,16 +236,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECR Public
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-      
-      - name: Create ECR repository if not exists
         run: |
-          REPO_NAME="${{ env.ECR_REPOSITORY_PREFIX }}/${{ steps.config.outputs.name }}"
-          
-          aws ecr describe-repositories --repository-names "$REPO_NAME" 2>/dev/null || \
-            aws ecr create-repository --repository-name "$REPO_NAME" --image-scanning-configuration scanOnPush=true
+          aws ecr-public get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin public.ecr.aws
       
       - name: Build application Docker image
         id: build
@@ -330,7 +325,7 @@ jobs:
           LOCAL_IMAGE="${{ steps.build.outputs.local_image }}"
           
           # ECR release image name
-          ECR_IMAGE="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_PREFIX }}/${NAME}"
+          ECR_IMAGE="${{ env.PUBLIC_ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_PREFIX }}/${NAME}"
           RELEASE_IMAGE="${ECR_IMAGE}:${VERSION}-${COMMIT_SHORT}"
           
           mkdir -p output
