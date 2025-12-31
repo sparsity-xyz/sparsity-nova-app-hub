@@ -242,6 +242,13 @@ jobs:
           aws ecr-public get-login-password --region us-east-1 | \
             docker login --username AWS --password-stdin public.ecr.aws
       
+      - name: Create ECR Public repository if not exists
+        run: |
+          REPO_NAME="${{ env.ECR_REPOSITORY_PREFIX }}/${{ steps.config.outputs.name }}"
+          
+          aws ecr-public describe-repositories --repository-names "$REPO_NAME" --region us-east-1 2>/dev/null || \
+            aws ecr-public create-repository --repository-name "$REPO_NAME" --region us-east-1
+      
       - name: Build application Docker image
         id: build
         run: |
