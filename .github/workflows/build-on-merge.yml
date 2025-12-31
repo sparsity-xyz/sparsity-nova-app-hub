@@ -366,6 +366,14 @@ jobs:
           echo "release_image=${RELEASE_IMAGE}" >> $GITHUB_OUTPUT
           echo "ecr_image=${ECR_IMAGE}" >> $GITHUB_OUTPUT
       
+      - name: Pre-pull required images for Enclaver
+        run: |
+          echo "Pre-pulling required Docker images..."
+          docker pull public.ecr.aws/d4t4u8d2/sparsity-ai/odyn:latest
+          docker pull public.ecr.aws/d4t4u8d2/sparsity-ai/enclaver-wrapper-base:latest
+          docker pull public.ecr.aws/s2t1d4c6/enclaver-io/nitro-cli:latest
+          echo "✅ Required images pre-pulled successfully"
+      
       - name: Build Enclaver release image
         id: enclaver
         run: |
