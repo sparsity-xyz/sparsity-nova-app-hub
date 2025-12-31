@@ -2,13 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/sparsity-xyz/sparsity-nova-app-hub/schemas/nova-build.schema.json",
   "title": "Nova Build Configuration",
-  "description": "Schema for Nova App Hub build configuration files",
+  "description": "Schema for Nova App Hub build configuration files. Enclaver configuration is in separate enclaver.yaml file.",
   "type": "object",
   "required": [
     "name",
     "version",
     "repo",
-    "branch"
+    "ref"
   ],
   "additionalProperties": false,
   "properties": {
@@ -29,15 +29,10 @@
       "description": "Public GitHub repository URL (must start with https://github.com/)",
       "pattern": "^https://github\\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+(\\.git)?$"
     },
-    "branch": {
+    "ref": {
       "type": "string",
-      "description": "Git branch name",
+      "description": "Git reference (branch name, tag name, or commit SHA)",
       "minLength": 1
-    },
-    "commit": {
-      "type": "string",
-      "description": "Specific commit hash (optional, uses latest if empty)",
-      "pattern": "^([a-f0-9]{40})?$"
     },
     "build": {
       "type": "object",
@@ -112,18 +107,6 @@
         }
       }
     },
-    "enclave": {
-      "type": "object",
-      "description": "AWS Nitro Enclave build configuration",
-      "additionalProperties": false,
-      "properties": {
-        "debug_mode": {
-          "type": "boolean",
-          "description": "Enable debug mode for EIF build (WARNING: PCR values will differ in debug mode)",
-          "default": false
-        }
-      }
-    },
     "reproducible": {
       "type": "object",
       "description": "Reproducible build settings for consistent PCR values",
@@ -138,48 +121,6 @@
           "type": "integer",
           "description": "Fixed Unix timestamp for reproducible builds. All timestamps in the build will use this value.",
           "minimum": 0
-        }
-      }
-    },
-    "enclaver": {
-      "type": "object",
-      "description": "Enclaver configuration for building and running enclave applications",
-      "additionalProperties": false,
-      "properties": {
-        "ingress_port": {
-          "type": "integer",
-          "description": "Port for ingress traffic into the enclave",
-          "default": 8000,
-          "minimum": 1,
-          "maximum": 65535
-        },
-        "api_port": {
-          "type": "integer",
-          "description": "Port for the internal API (attestation, signing, encryption)",
-          "default": 9000,
-          "minimum": 1,
-          "maximum": 65535
-        },
-        "aux_api_port": {
-          "type": "integer",
-          "description": "Port for the auxiliary API",
-          "default": 9001,
-          "minimum": 1,
-          "maximum": 65535
-        },
-        "memory_mb": {
-          "type": "integer",
-          "description": "Memory allocation for the enclave in MB",
-          "default": 1500,
-          "minimum": 256
-        },
-        "egress_allow": {
-          "type": "array",
-          "description": "List of domains allowed for egress traffic from the enclave",
-          "items": {
-            "type": "string",
-            "description": "Domain name (e.g., api.example.com)"
-          }
         }
       }
     }

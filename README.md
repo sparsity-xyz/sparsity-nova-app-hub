@@ -16,26 +16,37 @@ Nova App Hub enables developers to build their applications into AWS Nitro Encla
 
 ## Quick Start
 
-### 1. Create Your Configuration
+### Using Nova Platform (Recommended)
+
+The easiest way to build your application is through [Nova Platform](https://nova.sparsity.xyz):
+
+1. Create an app on Nova Platform
+2. Configure your repository URL and enclaver settings
+3. Click "Trigger Build" - Nova Platform generates both config files automatically
+
+### Manual Configuration
+
+If you prefer to manage configurations manually:
+
+#### 1. Create Your Configuration
 
 Create a new directory under `apps/` with your application name:
 
 ```
 apps/
 └── your-app-name/
-    └── nova-build.yaml
+    ├── nova-build.yaml    # Build configuration
+    └── enclaver.yaml      # Enclaver configuration
 ```
 
-### 2. Configure Your Build
-
-Create a `nova-build.yaml` file:
+#### 2. Configure nova-build.yaml (Build Settings)
 
 ```yaml
 # Required fields
 name: your-app-name           # Must match directory name
 version: 1.0.0                # Semantic version
 repo: https://github.com/your-org/your-repo
-branch: main
+ref: main                     # Branch, tag, or commit SHA
 
 # Optional: Build configuration
 build:
@@ -45,19 +56,6 @@ build:
     - name: BUILD_ENV
       value: production
 
-# Optional: Enclave build configuration
-enclave:
-  debug_mode: false           # WARNING: Debug mode changes PCR values!
-
-# Optional: Enclaver configuration
-enclaver:
-  ingress_port: 8000          # Your app's HTTP port
-  api_port: 9000              # Internal API port (attestation, signing)
-  aux_api_port: 9001          # Auxiliary API port
-  memory_mb: 1500             # Enclave memory allocation
-  egress_allow:               # Domains allowed for egress
-    - api.example.com
-
 # Optional: Metadata
 metadata:
   description: "Your application description"
@@ -65,15 +63,34 @@ metadata:
   license: MIT
 ```
 
-### 3. Submit a Pull Request
+#### 3. Configure enclaver.yaml (Enclaver Settings)
 
-1. Fork this repository
-2. Create your app configuration in `apps/your-app-name/nova-build.yaml`
-3. Submit a pull request
-4. Wait for automated validation
-5. Admin merges PR → Build automatically starts
+```yaml
+version: v1
+name: your-app-name
+target: nova-apps/your-app-name:1.0.0
+sources:
+  app: your-app-name:1.0.0
+defaults:
+  memory_mb: 1500             # Enclave memory allocation
+ingress:
+  - listen_port: 8000         # Your app's HTTP port
+api:
+  listen_port: 9000           # Internal API port (attestation, signing)
+aux_api:
+  listen_port: 9001           # Auxiliary API port
+egress:
+  allow:                      # Domains allowed for egress
+    - api.example.com
+```
 
-### 4. Get Your Artifacts
+#### 4. Trigger Build
+
+Builds can be triggered via:
+- **Nova Platform**: Click "Trigger Build" button
+- **Workflow Dispatch**: Manually trigger via GitHub Actions with `app_dir` input
+
+### Get Your Artifacts
 
 After build completes:
 
@@ -90,22 +107,30 @@ After build completes:
 | `name` | string | Application name (lowercase, numbers, hyphens) |
 | `version` | string | Semantic version (e.g., 1.0.0) |
 | `repo` | string | Public GitHub repository URL |
-| `branch` | string | Git branch to build from |
+| `ref` | string | Git reference (branch, tag, or commit SHA) |
 
-### Optional Fields
+### Optional Fields (nova-build.yaml)
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `commit` | string | (latest) | Specific commit hash |
 | `build.directory` | string | `.` | Dockerfile directory |
 | `build.dockerfile` | string | `Dockerfile` | Dockerfile name |
 | `build.args` | array | `[]` | Docker build arguments |
-| `enclave.debug_mode` | boolean | `false` | Enable debug mode (changes PCR!) |
-| `enclaver.ingress_port` | integer | `8000` | Ingress traffic port |
-| `enclaver.api_port` | integer | `9000` | Internal API port |
-| `enclaver.aux_api_port` | integer | `9001` | Auxiliary API port |
-| `enclaver.memory_mb` | integer | `1500` | Memory allocation (MB) |
-| `enclaver.egress_allow` | array | `[]` | Allowed egress domains |
+| `metadata.description` | string | - | Brief description of the application |
+| `metadata.maintainer` | string | - | Maintainer email address |
+| `metadata.license` | string | - | License identifier (e.g., MIT) |
+| `reproducible.enabled` | boolean | `true` | Enable reproducible build mode |
+| `reproducible.source_date_epoch` | integer | - | Fixed Unix timestamp for reproducible builds |
+
+### Enclaver Configuration (enclaver.yaml)
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `ingress[].listen_port` | integer | `8000` | Ingress traffic port |
+| `api.listen_port` | integer | `9000` | Internal API port |
+| `aux_api.listen_port` | integer | `9001` | Auxiliary API port |
+| `defaults.memory_mb` | integer | `1500` | Memory allocation (MB) |
+| `egress.allow` | array | `[]` | Allowed egress domains |
 
 ## PCR Values
 
@@ -171,7 +196,6 @@ Possible causes:
 - Different `SOURCE_DATE_EPOCH`
 - Non-deterministic Dockerfile operations
 - Different base image (not pinned by digest)
-- Debug mode enabled
 
 ### Q: What instance types support Nitro Enclaves?
 
