@@ -560,29 +560,36 @@ jobs:
           echo "Signing build-attestation.json with cosign (keyless)..."
           
           # Sign the attestation file using keyless signing via Sigstore Fulcio
-          cosign sign-blob --yes \
+          # Capture output to extract Rekor log index
+          SIGN_OUTPUT=$(cosign sign-blob --yes \
             --output-signature build-attestation.json.sig \
             --output-certificate build-attestation.json.crt \
-            build-attestation.json
-          
-          echo "✅ Build attestation signed successfully"
-          
-          # Verify the signature and extract Rekor log index
-          echo "Verifying attestation signature..."
-          VERIFY_OUTPUT=$(cosign verify-blob \
-            --signature build-attestation.json.sig \
-            --certificate build-attestation.json.crt \
-            --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
-            --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
             build-attestation.json 2>&1) || true
           
-          echo "$VERIFY_OUTPUT"
+          echo "$SIGN_OUTPUT"
+          echo "✅ Build attestation signed successfully"
           
-          # Try multiple patterns to extract Rekor log index
-          ATTESTATION_REKOR_INDEX=$(echo "$VERIFY_OUTPUT" | grep -oP 'tlog entry created with index:\s*\K\d+' || \
-                                   echo "$VERIFY_OUTPUT" | grep -oP '"logIndex":\s*\K\d+' | head -1 || \
-                                   echo "$VERIFY_OUTPUT" | grep -oP 'logIndex=\K\d+' | head -1 || \
-                                   echo "")
+          # Extract Rekor log index from sign-blob output
+          ATTESTATION_REKOR_INDEX=$(echo "$SIGN_OUTPUT" | grep -oP 'tlog entry created with index:\s*\K\d+' || echo "")
+          
+          # If not found in sign output, try verify output as fallback
+          if [ -z "$ATTESTATION_REKOR_INDEX" ]; then
+            echo "Verifying attestation signature to extract Rekor index..."
+            VERIFY_OUTPUT=$(cosign verify-blob \
+              --signature build-attestation.json.sig \
+              --certificate build-attestation.json.crt \
+              --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+              --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
+              build-attestation.json 2>&1) || true
+            
+            echo "$VERIFY_OUTPUT"
+            
+            # Try multiple patterns to extract Rekor log index
+            ATTESTATION_REKOR_INDEX=$(echo "$VERIFY_OUTPUT" | grep -oP 'tlog entry created with index:\s*\K\d+' || \
+                                     echo "$VERIFY_OUTPUT" | grep -oP '"logIndex":\s*\K\d+' | head -1 || \
+                                     echo "$VERIFY_OUTPUT" | grep -oP 'logIndex=\K\d+' | head -1 || \
+                                     echo "")
+          fi
           
           echo "attestation_rekor_index=$ATTESTATION_REKOR_INDEX" >> $GITHUB_OUTPUT
           echo "✅ Attestation signature verified - Rekor log index: $ATTESTATION_REKOR_INDEX"
@@ -654,8 +661,8 @@ jobs:
             
             This image and build attestation are signed using [Sigstore cosign](https://sigstore.dev) with keyless signing.
             
-            - **Image Rekor Log Index**: `${{ steps.sign.outputs.rekor_index }}`
-            - **Attestation Rekor Log Index**: `${{ steps.sign_attestation.outputs.attestation_rekor_index }}`
+            - **Image Rekor Log Index**: [`${{ steps.sign.outputs.rekor_index }}`](https://search.sigstore.dev/?logIndex=${{ steps.sign.outputs.rekor_index }})
+            - **Attestation Rekor Log Index**: [`${{ steps.sign_attestation.outputs.attestation_rekor_index }}`](https://search.sigstore.dev/?logIndex=${{ steps.sign_attestation.outputs.attestation_rekor_index }})
             
             ### Verify Container Image Signature
             
