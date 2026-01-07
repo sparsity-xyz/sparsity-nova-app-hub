@@ -705,6 +705,8 @@ jobs:
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Name | ${{ steps.config.outputs.name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Version | ${{ steps.config.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Directory | \`${{ steps.config.outputs.directory }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dockerfile | \`${{ steps.config.outputs.dockerfile }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Source Commit | \`${{ steps.clone.outputs.commit_short }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| SOURCE_DATE_EPOCH | \`${{ steps.epoch.outputs.epoch }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
