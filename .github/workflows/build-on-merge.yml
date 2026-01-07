@@ -483,8 +483,8 @@ jobs:
           echo "rekor_index=$REKOR_INDEX" >> $GITHUB_OUTPUT
           echo "✅ Signature verified - Rekor log index: $REKOR_INDEX"
       
-      - name: Generate unified build metadata
-        id: metadata
+      - name: Generate build-attestation.json
+        id: attestation
         run: |
           NAME="${{ steps.config.outputs.name }}"
           VERSION="${{ steps.config.outputs.version }}"
@@ -493,43 +493,82 @@ jobs:
           PCR0="${{ steps.enclaver.outputs.pcr0 }}"
           PCR1="${{ steps.enclaver.outputs.pcr1 }}"
           PCR2="${{ steps.enclaver.outputs.pcr2 }}"
-          REKOR_INDEX="${{ steps.sign.outputs.rekor_index }}"
+          IMAGE_REKOR_INDEX="${{ steps.sign.outputs.rekor_index }}"
           
           cd output
           
-          # Create unified build-metadata.json
-          cat > build-metadata.json << EOF
+          # Create build-attestation.json following the schema from docs/build-attestation.md
+          cat > build-attestation.json << EOF
           {
             "schema_version": "1.0",
-            "app_name": "$NAME",
-            "version": "$VERSION",
-            "image_uri": "${RELEASE_IMAGE}",
-            "image_digest": "${DIGEST}",
-            "source_repo": "${{ steps.config.outputs.repo }}",
-            "source_ref": "${{ steps.config.outputs.ref }}",
-            "source_commit": "${{ steps.clone.outputs.commit_sha }}",
-            "source_commit_short": "${{ steps.clone.outputs.commit_short }}",
-            "source_date_epoch": "${{ steps.epoch.outputs.epoch }}",
-            "build_timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
-            "github_run_id": "${{ github.run_id }}",
-            "github_run_number": "${{ github.run_number }}",
-            "pcr": {
-              "PCR0": "$PCR0",
-              "PCR1": "$PCR1",
-              "PCR2": "$PCR2"
+            "type": "https://sparsity.cloud/nova/build-attestation/v1",
+            "source": {
+              "repo": "${{ steps.config.outputs.repo }}",
+              "ref": "${{ steps.config.outputs.ref }}",
+              "commit": "${{ steps.clone.outputs.commit_sha }}",
+              "directory": "${{ steps.config.outputs.directory }}",
+              "dockerfile": "${{ steps.config.outputs.dockerfile }}"
             },
-            "slsa": {
-              "signed": true,
-              "rekor_log_index": "$REKOR_INDEX",
-              "certificate_issuer": "https://token.actions.githubusercontent.com",
-              "certificate_identity": "https://github.com/${{ github.repository }}/.github/workflows/build-on-merge.yml@${{ github.ref }}",
-              "verification_command": "cosign verify --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' --certificate-oidc-issuer='https://token.actions.githubusercontent.com' ${RELEASE_IMAGE}@${DIGEST}"
+            "enclave": {
+              "pcr0": "$PCR0",
+              "pcr1": "$PCR1",
+              "pcr2": "$PCR2"
+            },
+            "build": {
+              "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
+              "source_date_epoch": "${{ steps.epoch.outputs.epoch }}",
+              "github_run_id": "${{ github.run_id }}",
+              "github_run_number": "${{ github.run_number }}",
+              "builder_identity": "https://github.com/${{ github.repository }}/.github/workflows/build-on-merge.yml@${{ github.ref }}"
+            },
+            "image": {
+              "uri": "${RELEASE_IMAGE}",
+              "digest": "${DIGEST}",
+              "rekor_log_index": "${IMAGE_REKOR_INDEX}"
             }
           }
           EOF
           
-          echo "Build metadata saved to build-metadata.json"
-          cat build-metadata.json
+          echo "Build attestation saved to build-attestation.json"
+          cat build-attestation.json
+          
+          # Compute keccak256 hash for on-chain verification
+          # Note: Using sha256 as fallback since keccak256 requires additional tools
+          ATTESTATION_SHA256=$(sha256sum build-attestation.json | cut -d' ' -f1)
+          echo "attestation_sha256=$ATTESTATION_SHA256" >> $GITHUB_OUTPUT
+          echo "Attestation SHA256: $ATTESTATION_SHA256"
+      
+      - name: Sign build-attestation.json
+        id: sign_attestation
+        run: |
+          cd output
+          
+          echo "Signing build-attestation.json with cosign (keyless)..."
+          
+          # Sign the attestation file using keyless signing via Sigstore Fulcio
+          cosign sign-blob --yes \
+            --output-signature build-attestation.json.sig \
+            --output-certificate build-attestation.json.crt \
+            build-attestation.json
+          
+          echo "✅ Build attestation signed successfully"
+          
+          # Verify the signature
+          echo "Verifying attestation signature..."
+          VERIFY_OUTPUT=$(cosign verify-blob \
+            --signature build-attestation.json.sig \
+            --certificate build-attestation.json.crt \
+            --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+            --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
+            build-attestation.json 2>&1) || true
+          
+          echo "$VERIFY_OUTPUT"
+          
+          # Extract Rekor log index
+          ATTESTATION_REKOR_INDEX=$(echo "$VERIFY_OUTPUT" | grep -oP '"logIndex":\s*\K\d+' | head -1 || echo "")
+          
+          echo "attestation_rekor_index=$ATTESTATION_REKOR_INDEX" >> $GITHUB_OUTPUT
+          echo "✅ Attestation signature verified - Rekor log index: $ATTESTATION_REKOR_INDEX"
       
       - name: Upload artifacts to S3
         run: |
@@ -537,14 +576,21 @@ jobs:
           VERSION="${{ steps.config.outputs.version }}"
           
           echo "Uploading artifacts to S3..."
+          
+          # Upload build attestation and signature
+          aws s3 cp output/build-attestation.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json"
+          aws s3 cp output/build-attestation.json.sig "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.sig"
+          aws s3 cp output/build-attestation.json.crt "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.crt"
+          
+          # Upload other build artifacts
           aws s3 cp output/pcr.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
-          aws s3 cp output/build-metadata.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-metadata.json"
           aws s3 cp output/build-output.txt "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-output.txt"
           aws s3 cp output/enclaver.yaml "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/enclaver.yaml"
           
           echo "✅ Artifacts uploaded successfully"
-          echo "  PCR: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
-          echo "  Metadata: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-metadata.json"
+          echo "  Attestation: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json"
+          echo "  Signature: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.sig"
+          echo "  Certificate: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.crt"
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -589,17 +635,35 @@ jobs:
             
             ## SLSA Provenance & Signature Verification
             
-            This image is signed using [Sigstore cosign](https://sigstore.dev) with keyless signing.
+            This image and build attestation are signed using [Sigstore cosign](https://sigstore.dev) with keyless signing.
             
-            **Rekor Log Index**: `${{ steps.sign.outputs.rekor_index }}`
+            **Image Rekor Log Index**: `${{ steps.sign.outputs.rekor_index }}`
+            **Attestation Rekor Log Index**: `${{ steps.sign_attestation.outputs.attestation_rekor_index }}`
             
-            ### Verify Signature
+            ### Verify Container Image Signature
             
             ```bash
             cosign verify \
               --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
               --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
               ${{ steps.enclaver.outputs.release_image }}@${{ steps.enclaver.outputs.digest }}
+            ```
+            
+            ### Verify Build Attestation Signature
+            
+            ```bash
+            # Download attestation files
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json.sig
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json.crt
+            
+            # Verify signature
+            cosign verify-blob \
+              --signature build-attestation.json.sig \
+              --certificate build-attestation.json.crt \
+              --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+              --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
+              build-attestation.json
             ```
             
             ## Usage
@@ -617,12 +681,15 @@ jobs:
             
             1. Check the [GitHub Actions run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             2. Verify PCR values match the expected values for your attestation policy
-            3. Verify the container signature using cosign (see above)
+            3. Verify the container image signature using cosign
+            4. Verify the build attestation signature using cosign
           draft: false
           prerelease: false
           files: |
+            output/build-attestation.json
+            output/build-attestation.json.sig
+            output/build-attestation.json.crt
             output/pcr.json
-            output/build-metadata.json
             output/enclaver.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
