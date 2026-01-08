@@ -3,11 +3,11 @@ version: v1
 name: 107-fully-secured-chat-bot
 
 # Target image (updated by build workflow in app-hub)
-target: nova-apps/107-fully-secured-chat-bot:1.2.7
+target: nova-apps/107-fully-secured-chat-bot:1.2.8
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: 107-fully-secured-chat-bot:1.2.7
+  app: 107-fully-secured-chat-bot:1.2.8
 
 defaults:
   cpu_count: 2
