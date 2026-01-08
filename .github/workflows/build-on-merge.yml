@@ -546,11 +546,10 @@ jobs:
           echo "Build attestation saved to build-attestation.json"
           cat build-attestation.json
           
-          # Compute keccak256 hash for on-chain verification
-          # Note: Using sha256 as fallback since keccak256 requires additional tools
+          # Compute sha256 hash for on-chain verification
           ATTESTATION_SHA256=$(sha256sum build-attestation.json | cut -d' ' -f1)
-          echo "attestation_sha256=$ATTESTATION_SHA256" >> $GITHUB_OUTPUT
-          echo "Attestation SHA256: $ATTESTATION_SHA256"
+          echo "build_attestation_sha256=$ATTESTATION_SHA256" >> $GITHUB_OUTPUT
+          echo "Build Attestation SHA256: $ATTESTATION_SHA256"
       
       - name: Sign build-attestation.json
         id: sign_attestation
@@ -657,6 +656,13 @@ jobs:
             
             **Digest**: `${{ steps.enclaver.outputs.digest }}`
             
+            ## Build Attestation
+            
+            | Property | Value |
+            |----------|-------|
+            | **File** | [build-attestation.json](https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json) |
+            | **SHA256** | `${{ steps.attestation.outputs.build_attestation_sha256 }}` |
+            
             ## SLSA Provenance & Signature Verification
             
             This image and build attestation are signed using [Sigstore cosign](https://sigstore.dev) with keyless signing.
@@ -729,22 +735,48 @@ jobs:
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Name | ${{ steps.config.outputs.name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Version | ${{ steps.config.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Directory | \`${{ steps.config.outputs.directory }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Dockerfile | \`${{ steps.config.outputs.dockerfile }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Source Commit | \`${{ steps.clone.outputs.commit_short }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Time | ${{ steps.attestation.outputs.build_timestamp }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Number | ${{ github.run_number }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Source" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Repository | ${{ steps.config.outputs.repo }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Ref | ${{ steps.config.outputs.ref }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ steps.clone.outputs.commit_sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit Message | ${{ steps.clone.outputs.commit_message }} |" >> $GITHUB_STEP_SUMMARY
           echo "| SOURCE_DATE_EPOCH | \`${{ steps.epoch.outputs.epoch }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### PCR Values" >> $GITHUB_STEP_SUMMARY
+          echo "### PCR Values (Platform Configuration Registers)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "These values can be used for remote attestation to verify the enclave identity." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| PCR | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| PCR0 | \`${{ steps.enclaver.outputs.pcr0 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| PCR1 | \`${{ steps.enclaver.outputs.pcr1 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| PCR2 | \`${{ steps.enclaver.outputs.pcr2 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR0** | \`${{ steps.enclaver.outputs.pcr0 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR1** | \`${{ steps.enclaver.outputs.pcr1 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR2** | \`${{ steps.enclaver.outputs.pcr2 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Release Image" >> $GITHUB_STEP_SUMMARY
-          echo "| Type | Location |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Release Image | \`${{ steps.enclaver.outputs.release_image }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Docker Image" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The release image contains the EIF and Enclaver runtime:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.enclaver.outputs.release_image }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest**: \`${{ steps.enclaver.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Attestation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **File** | [build-attestation.json](https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **SHA256** | \`${{ steps.attestation.outputs.build_attestation_sha256 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Links" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [GitHub Release](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }})" >> $GITHUB_STEP_SUMMARY
       
       # Callback to Nova Platform (optional - does not fail the build)
       - name: Callback to Nova Platform (Success)
@@ -767,7 +799,9 @@ jobs:
               "pcr0": "${{ steps.enclaver.outputs.pcr0 }}",
               "pcr1": "${{ steps.enclaver.outputs.pcr1 }}",
               "pcr2": "${{ steps.enclaver.outputs.pcr2 }}",
-              "github_run_id": "${{ github.run_id }}"
+              "github_run_id": "${{ github.run_id }}",
+              "build_attestation_url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json",
+              "build_attestation_sha256": "${{ steps.attestation.outputs.build_attestation_sha256 }}"
             }' || echo "Callback failed, but continuing..."
         env:
           NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
