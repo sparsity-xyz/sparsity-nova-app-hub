@@ -626,7 +626,7 @@ jobs:
             - **Application**: ${{ steps.config.outputs.name }}
             - **Version**: ${{ steps.config.outputs.version }}
             - **Build Time**: ${{ steps.attestation.outputs.build_timestamp }}
-            - **Build Number**: ${{ github.run_number }}
+            - **Workflow Run Number**: ${{ github.run_number }}
             
             ## Source
             
@@ -634,6 +634,8 @@ jobs:
             - **Ref**: ${{ steps.config.outputs.ref }}
             - **Commit**: `${{ steps.clone.outputs.commit_sha }}`
             - **Commit Message**: ${{ steps.clone.outputs.commit_message }}
+            - **Directory**: `${{ steps.config.outputs.directory }}`
+            - **Dockerfile**: `${{ steps.config.outputs.dockerfile }}`
             - **SOURCE_DATE_EPOCH**: `${{ steps.epoch.outputs.epoch }}`
             
             ## PCR Values (Platform Configuration Registers)
@@ -736,7 +738,7 @@ jobs:
           echo "| Name | ${{ steps.config.outputs.name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Version | ${{ steps.config.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build Time | ${{ steps.attestation.outputs.build_timestamp }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build Number | ${{ github.run_number }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflow Run Number | ${{ github.run_number }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Source" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
@@ -745,6 +747,8 @@ jobs:
           echo "| Ref | ${{ steps.config.outputs.ref }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | \`${{ steps.clone.outputs.commit_sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Commit Message | ${{ steps.clone.outputs.commit_message }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Directory | \`${{ steps.config.outputs.directory }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dockerfile | \`${{ steps.config.outputs.dockerfile }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| SOURCE_DATE_EPOCH | \`${{ steps.epoch.outputs.epoch }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### PCR Values (Platform Configuration Registers)" >> $GITHUB_STEP_SUMMARY
