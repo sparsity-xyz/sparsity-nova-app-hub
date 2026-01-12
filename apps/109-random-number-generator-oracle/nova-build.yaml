@@ -1,5 +1,5 @@
 name: 109-random-number-generator-oracle
-version: '1.0.2'
+version: '1.0.3'
 repo: https://github.com/sparsity-xyz/sparsity-nova-examples
 ref: main
 build:

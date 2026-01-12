@@ -3,11 +3,11 @@ version: v1
 name: 109-random-number-generator-oracle
 
 # Target image (updated by build workflow in app-hub)
-target: nova-apps/109-random-number-generator-oracle:1.0.2
+target: nova-apps/109-random-number-generator-oracle:1.0.3
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: 109-random-number-generator-oracle:1.0.2
+  app: 109-random-number-generator-oracle:1.0.3
 
 defaults:
   cpu_count: 2
