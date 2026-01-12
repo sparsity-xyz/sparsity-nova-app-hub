@@ -1,0 +1,10 @@
+name: 109-random-number-generator-oracle
+version: '1.0.2'
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+ref: main
+build:
+  directory: oracles/rng-oracle/enclave
+  dockerfile: Dockerfile
+
+metadata:
+  description: A Verifiable Random Number Generator Oracle,  using TEE hardware random to generate cryptographically secure random numbers and fulfills on-chain requests.
