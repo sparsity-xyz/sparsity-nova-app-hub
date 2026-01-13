@@ -1,0 +1,10 @@
+name: 110-secure-chat-bot
+version: '1.0.0'
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+ref: main
+build:
+  directory: secured-chat-bot/enclave
+  dockerfile: Dockerfile
+
+metadata:
+  description: A verifiable AI chat application running on the Sparsity Nova TEE platform with end-to-end encryption.
