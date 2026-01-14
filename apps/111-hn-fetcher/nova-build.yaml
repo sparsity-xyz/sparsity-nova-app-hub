@@ -1,0 +1,10 @@
+name: 111-hn-fetcher
+version: '1.0.0'
+repo: https://github.com/enclaver-io/enclaver
+ref: main
+build:
+  directory: example
+  dockerfile: Dockerfile
+
+metadata:
+  description: hacker news fetcher
