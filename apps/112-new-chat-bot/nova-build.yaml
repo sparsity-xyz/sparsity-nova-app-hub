@@ -1,0 +1,10 @@
+name: 112-new-chat-bot
+version: '1.0.1'
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+ref: main
+build:
+  directory: secured-chat-bot/enclave
+  dockerfile: Dockerfile
+
+metadata:
+  description: new chat bot
