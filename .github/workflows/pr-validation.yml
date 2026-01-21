@@ -38,9 +38,9 @@ jobs:
               exit 1
             fi
             
-            # Only allow nova-build.yaml files
-            if [[ ! "$file" =~ /nova-build\.yaml$ ]]; then
-              echo "ERROR: Only nova-build.yaml files are allowed: $file"
+            # Only allow essential configuration and info files
+            if [[ ! "$file" =~ /(nova-build\.yaml|enclaver\.yaml|BUILD_INFO\.md)$ ]]; then
+              echo "ERROR: Only nova-build.yaml, enclaver.yaml, and BUILD_INFO.md files are allowed: $file"
               exit 1
             fi
           done
@@ -63,6 +63,11 @@ jobs:
           SCHEMA_FILE="schemas/nova-build.schema.json"
           
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ ! "$file" =~ /nova-build\.yaml$ ]]; then
+              echo "Skipping non-build config file: $file"
+              continue
+            fi
+            
             echo "=========================================="
             echo "Validating: $file"
             echo "=========================================="
