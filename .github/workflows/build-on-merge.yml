@@ -11,8 +11,8 @@ on:
         description: 'App directory name to build (e.g., 123-hn-fetcher)'
         required: true
         type: string
-      app_id:
-        description: 'App ID from Nova Platform (for callback)'
+      app_sqid:
+        description: 'App SQID from Nova Platform (for callback)'
         required: false
         type: string
       build_id:
@@ -784,7 +784,7 @@ jobs:
       
       # Callback to Nova Platform (optional - does not fail the build)
       - name: Callback to Nova Platform (Success)
-        if: success() && github.event.inputs.app_id != '' && github.event.inputs.build_id != ''
+        if: success() && github.event.inputs.app_sqid != '' && github.event.inputs.build_id != ''
         continue-on-error: true
         run: |
           echo "Sending success callback to Nova Platform..."
@@ -793,7 +793,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
-              "app_id": ${{ github.event.inputs.app_id }},
+              "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
               "status": "success",
               "image_uri": "${{ steps.enclaver.outputs.release_image }}",
@@ -811,7 +811,7 @@ jobs:
           NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
       
       - name: Callback to Nova Platform (Failure)
-        if: failure() && github.event.inputs.app_id != '' && github.event.inputs.build_id != ''
+        if: failure() && github.event.inputs.app_sqid != '' && github.event.inputs.build_id != ''
         continue-on-error: true
         run: |
           echo "Sending failure callback to Nova Platform..."
@@ -820,7 +820,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
-              "app_id": ${{ github.event.inputs.app_id }},
+              "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
               "status": "failed",
               "error_message": "Build failed. See GitHub Actions run ${{ github.run_id }} for details.",
