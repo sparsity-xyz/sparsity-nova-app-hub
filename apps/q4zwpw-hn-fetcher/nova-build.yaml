@@ -1,7 +1,7 @@
 name: q4zwpw-hn-fetcher
-version: '1.0.0'
+version: '1.0.1'
 repo: https://github.com/sparsity-xyz/enclaver/
-ref: main
+ref: sparsity
 build:
   directory: examples/hn-fetcher
   dockerfile: Dockerfile
