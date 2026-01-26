@@ -3,11 +3,11 @@ version: v1
 name: q4zwpw-hn-fetcher
 
 # Target image (updated by build workflow in app-hub)
-target: nova-apps/q4zwpw-hn-fetcher:1.0.1
+target: nova-apps/q4zwpw-hn-fetcher:1.0.2
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: q4zwpw-hn-fetcher:1.0.1
+  app: q4zwpw-hn-fetcher:1.0.2
 
 defaults:
   cpu_count: 2
