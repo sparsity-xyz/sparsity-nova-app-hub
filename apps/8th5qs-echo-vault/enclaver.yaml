@@ -1,0 +1,39 @@
+version: v1
+# Application name (must match nova-build.yaml)
+name: 8th5qs-echo-vault
+
+# Target image (updated by build workflow in app-hub)
+target: nova-apps/8th5qs-echo-vault:1.0.0
+
+sources:
+  # Application image (updated by build workflow in app-hub)
+  app: 8th5qs-echo-vault:1.0.0
+
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+  - listen_port: 8000
+  - listen_port: 18001
+egress:
+  allow:
+    - "**"
+    - "0.0.0.0/0"
+    - "::/0"
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+# S3 Storage Configuration
+storage:
+  s3:
+    enabled: true
+    bucket: "nova-app-storage-prod"
+    prefix: "apps/8th5qs/"
+    region: "us-west-1"
+# Helios Light Client RPC
+helios_rpc:
+  enabled: true
+  kind: opstack
+  network: "base-sepolia"
+  execution_rpc: "https://sepolia.base.org"
