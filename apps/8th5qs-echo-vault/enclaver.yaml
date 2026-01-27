@@ -1,8 +1,8 @@
 version: v1
 name: 8th5qs-echo-vault
-target: nova-apps/8th5qs-echo-vault:1.0.2
+target: nova-apps/8th5qs-echo-vault:1.0.3
 sources:
-  app: 8th5qs-echo-vault:1.0.2
+  app: 8th5qs-echo-vault:1.0.3
 defaults:
   cpu_count: 2
   memory_mb: 2048
