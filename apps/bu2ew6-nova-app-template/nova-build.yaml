@@ -1,0 +1,10 @@
+name: bu2ew6-nova-app-template
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: The template for building and deploying verifiable TEE applications
+    on the Nova platform
