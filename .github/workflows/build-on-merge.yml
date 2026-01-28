@@ -136,6 +136,11 @@ jobs:
           DIRECTORY=$(yq eval '.build.directory // "."' "$CONFIG_FILE")
           DOCKERFILE=$(yq eval '.build.dockerfile // "Dockerfile"' "$CONFIG_FILE")
           
+          # Normalize directory: "/" means root of repo, same as "."
+          if [ "$DIRECTORY" = "/" ]; then
+            DIRECTORY="."
+          fi
+          
           # Metadata
           DESCRIPTION=$(yq eval '.metadata.description // ""' "$CONFIG_FILE")
           MAINTAINER=$(yq eval '.metadata.maintainer // ""' "$CONFIG_FILE")
