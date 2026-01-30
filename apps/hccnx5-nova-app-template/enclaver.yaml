@@ -1,8 +1,8 @@
 version: v1
 name: hccnx5-nova-app-template
-target: nova-apps/hccnx5-nova-app-template:1.0.1
+target: nova-apps/hccnx5-nova-app-template:1.0.2
 sources:
-  app: hccnx5-nova-app-template:1.0.1
+  app: hccnx5-nova-app-template:1.0.2
 defaults:
   cpu_count: 2
   memory_mb: 2048

@@ -1,5 +1,5 @@
 name: hccnx5-nova-app-template
-version: 1.0.1
+version: 1.0.2
 repo: https://github.com/sparsity-xyz/nova-app-template
 ref: main
 build:
