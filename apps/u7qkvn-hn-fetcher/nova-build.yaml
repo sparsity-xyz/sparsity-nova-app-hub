@@ -1,0 +1,9 @@
+name: u7qkvn-hn-fetcher
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/enclaver/
+ref: main
+build:
+  directory: examples/hn-fetcher
+  dockerfile: Dockerfile
+metadata:
+  description: hacker news fetcher
