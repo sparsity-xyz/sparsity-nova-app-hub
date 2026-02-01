@@ -1,8 +1,8 @@
 version: v1
 name: u7qkvn-hn-fetcher
-target: nova-apps/u7qkvn-hn-fetcher:1.0.0
+target: nova-apps/u7qkvn-hn-fetcher:1.0.1
 sources:
-  app: u7qkvn-hn-fetcher:1.0.0
+  app: u7qkvn-hn-fetcher:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
