@@ -1,8 +1,8 @@
 version: v1
 name: 52uc2c-hn-fetcher
-target: nova-apps/52uc2c-hn-fetcher:1.0.1
+target: nova-apps/52uc2c-hn-fetcher:1.0.0
 sources:
-  app: 52uc2c-hn-fetcher:1.0.1
+  app: 52uc2c-hn-fetcher:1.0.0
 defaults:
   cpu_count: 2
   memory_mb: 2048
