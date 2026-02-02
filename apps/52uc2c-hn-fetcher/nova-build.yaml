@@ -1,0 +1,9 @@
+name: 52uc2c-hn-fetcher
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/enclaver/
+ref: sparsity
+build:
+  directory: examples/hn-fetcher
+  dockerfile: Dockerfile
+metadata:
+  description: hacker news fetcher
