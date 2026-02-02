@@ -1,5 +1,5 @@
 name: 52uc2c-hn-fetcher
-version: 1.0.0
+version: 1.1.0
 repo: https://github.com/sparsity-xyz/enclaver/
 ref: sparsity
 build:
