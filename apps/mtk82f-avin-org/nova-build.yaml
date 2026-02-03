@@ -1,0 +1,9 @@
+name: mtk82f-avin-org
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+ref: main
+build:
+  directory: secured-chat-bot/enclave
+  dockerfile: Dockerfile
+metadata:
+  description: for fun
