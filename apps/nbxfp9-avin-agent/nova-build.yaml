@@ -1,0 +1,9 @@
+name: nbxfp9-avin-agent
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: main
+build:
+  directory: enclave
+  dockerfile: Dockerfile
+metadata:
+  description: personal AI agent.
