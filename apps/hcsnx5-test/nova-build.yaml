@@ -1,0 +1,9 @@
+name: hcsnx5-test
+version: '1'
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: ''
