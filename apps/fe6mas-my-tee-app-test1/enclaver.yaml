@@ -1,8 +1,8 @@
 version: v1
 name: fe6mas-my-tee-app-test1
-target: nova-apps/fe6mas-my-tee-app-test1:1.0.0
+target: nova-apps/fe6mas-my-tee-app-test1:1.0.1
 sources:
-  app: fe6mas-my-tee-app-test1:1.0.0
+  app: fe6mas-my-tee-app-test1:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
