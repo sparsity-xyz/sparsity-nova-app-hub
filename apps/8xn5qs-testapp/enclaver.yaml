@@ -1,8 +1,8 @@
 version: v1
 name: 8xn5qs-testapp
-target: nova-apps/8xn5qs-testapp:1.0.0
+target: nova-apps/8xn5qs-testapp:1.0.22
 sources:
-  app: 8xn5qs-testapp:1.0.0
+  app: 8xn5qs-testapp:1.0.22
 defaults:
   cpu_count: 2
   memory_mb: 2048
