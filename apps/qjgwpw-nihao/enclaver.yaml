@@ -1,8 +1,8 @@
 version: v1
 name: qjgwpw-nihao
-target: nova-apps/qjgwpw-nihao:1.0.0
+target: nova-apps/qjgwpw-nihao:1.0.1
 sources:
-  app: qjgwpw-nihao:1.0.0
+  app: qjgwpw-nihao:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
