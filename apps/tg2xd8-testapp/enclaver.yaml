@@ -1,8 +1,8 @@
 version: v1
 name: tg2xd8-testapp
-target: nova-apps/tg2xd8-testapp:1.0
+target: nova-apps/tg2xd8-testapp:1.0.1
 sources:
-  app: tg2xd8-testapp:1.0
+  app: tg2xd8-testapp:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
