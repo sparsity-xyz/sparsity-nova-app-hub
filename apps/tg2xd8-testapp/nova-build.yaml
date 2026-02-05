@@ -1,0 +1,9 @@
+name: tg2xd8-testapp
+version: '1.0'
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: ''
