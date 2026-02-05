@@ -1,0 +1,9 @@
+name: w9g6jp-nn-hn-fetcher
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/enclaver/
+ref: sparsity
+build:
+  directory: examples/hn-fetcher
+  dockerfile: Dockerfile
+metadata:
+  description: nn hacker news fetcher
