@@ -1,0 +1,29 @@
+version: v1
+name: nbyfp9-superman
+target: nova-apps/nbyfp9-superman:1.0.0
+sources:
+  app: nbyfp9-superman:1.0.0
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+- listen_port: 8080
+- listen_port: 18001
+egress:
+  allow:
+  - '**'
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+storage:
+  s3:
+    enabled: false
+    bucket: nova-app-storage-prod
+    prefix: apps/nbyfp9/
+    region: us-west-1
+helios_rpc:
+  enabled: false
+  kind: ethereum
+  network: mainnet
+  execution_rpc: ''
