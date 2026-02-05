@@ -1,0 +1,31 @@
+version: v1
+name: y56hnm-
+target: nova-apps/y56hnm-:1.0.0
+sources:
+  app: y56hnm-:1.0.0
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+- listen_port: 7997
+- listen_port: 18001
+egress:
+  allow:
+  - '**'
+  - 0.0.0.0/0
+  - ::/0
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+storage:
+  s3:
+    enabled: true
+    bucket: nova-app-storage-prod
+    prefix: apps/y56hnm/
+    region: us-west-1
+helios_rpc:
+  enabled: false
+  kind: ethereum
+  network: ''
+  execution_rpc: ''
