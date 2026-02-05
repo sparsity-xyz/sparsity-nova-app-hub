@@ -1,0 +1,9 @@
+name: rvs7ft-new-hn-fetcher
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/enclaver/
+ref: sparsity
+build:
+  directory: examples/hn-fetcher
+  dockerfile: Dockerfile
+metadata:
+  description: new hacker news fetcher
