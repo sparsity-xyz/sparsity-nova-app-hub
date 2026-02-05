@@ -1,8 +1,8 @@
 version: v1
 name: w9g6jp-nn-hn-fetcher
-target: nova-apps/w9g6jp-nn-hn-fetcher:1.0.0
+target: nova-apps/w9g6jp-nn-hn-fetcher:1.0.1
 sources:
-  app: w9g6jp-nn-hn-fetcher:1.0.0
+  app: w9g6jp-nn-hn-fetcher:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
