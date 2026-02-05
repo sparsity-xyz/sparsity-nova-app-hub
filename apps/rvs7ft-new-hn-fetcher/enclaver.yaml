@@ -1,8 +1,8 @@
 version: v1
 name: rvs7ft-new-hn-fetcher
-target: nova-apps/rvs7ft-new-hn-fetcher:1.0.0
+target: nova-apps/rvs7ft-new-hn-fetcher:1.1.0
 sources:
-  app: rvs7ft-new-hn-fetcher:1.0.0
+  app: rvs7ft-new-hn-fetcher:1.1.0
 defaults:
   cpu_count: 2
   memory_mb: 2048
