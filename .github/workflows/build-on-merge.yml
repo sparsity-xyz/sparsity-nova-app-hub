@@ -116,6 +116,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      # Callback to Nova Platform when build starts (optional - does not fail the build)
+      - name: Callback to Nova Platform (Started)
+        if: github.event.inputs.app_sqid != '' && github.event.inputs.build_id != ''
+        continue-on-error: true
+        run: |
+          echo "Sending started callback to Nova Platform..."
+          API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
+          curl -X POST "${API_URL}/api/builds/callback" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
+            -d '{
+              "app_sqid": "${{ github.event.inputs.app_sqid }}",
+              "build_id": ${{ github.event.inputs.build_id }},
+              "status": "started",
+              "github_run_id": "${{ github.run_id }}"
+            }' || echo "Callback failed, but continuing..."
+        env:
+          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
+      
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
