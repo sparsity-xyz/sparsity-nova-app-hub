@@ -1,0 +1,9 @@
+name: p5fyds-
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/enclaver/
+ref: sparsity
+build:
+  directory: examples/hn-fetcher
+  dockerfile: Dockerfile
+metadata:
+  description: "\u4E2D\u6587app"
