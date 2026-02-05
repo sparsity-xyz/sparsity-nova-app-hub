@@ -1,8 +1,8 @@
 version: v1
 name: p5fyds-app
-target: nova-apps/p5fyds-app:1.1.0
+target: nova-apps/p5fyds-app:1.2.0
 sources:
-  app: p5fyds-app:1.1.0
+  app: p5fyds-app:1.2.0
 defaults:
   cpu_count: 2
   memory_mb: 2048
