@@ -1,8 +1,8 @@
 version: v1
 name: z6rgs8-nnn-hn-fetcher
-target: nova-apps/z6rgs8-nnn-hn-fetcher:1.0.0
+target: nova-apps/z6rgs8-nnn-hn-fetcher:1.0.1
 sources:
-  app: z6rgs8-nnn-hn-fetcher:1.0.0
+  app: z6rgs8-nnn-hn-fetcher:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048

@@ -1,5 +1,5 @@
 name: z6rgs8-nnn-hn-fetcher
-version: 1.0.0
+version: 1.0.1
 repo: https://github.com/sparsity-xyz/enclaver/
 ref: sparsity
 build:
