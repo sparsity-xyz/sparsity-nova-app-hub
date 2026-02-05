@@ -1,8 +1,8 @@
 version: v1
 name: bupew6-my-tee-app-test1
-target: nova-apps/bupew6-my-tee-app-test1:1.0.0
+target: nova-apps/bupew6-my-tee-app-test1:1.0.1
 sources:
-  app: bupew6-my-tee-app-test1:1.0.0
+  app: bupew6-my-tee-app-test1:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048

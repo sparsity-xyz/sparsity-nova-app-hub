@@ -1,5 +1,5 @@
 name: bupew6-my-tee-app-test1
-version: 1.0.0
+version: 1.0.1
 repo: https://github.com/sparsity-xyz/nova-app-template
 ref: main
 build:
