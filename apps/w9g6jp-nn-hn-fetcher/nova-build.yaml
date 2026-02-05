@@ -1,5 +1,5 @@
 name: w9g6jp-nn-hn-fetcher
-version: 1.0.1
+version: 1.0.3
 repo: https://github.com/sparsity-xyz/enclaver/
 ref: sparsity
 build:
