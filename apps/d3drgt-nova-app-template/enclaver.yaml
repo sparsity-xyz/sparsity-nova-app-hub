@@ -1,0 +1,29 @@
+version: v1
+name: d3drgt-nova-app-template
+target: nova-apps/d3drgt-nova-app-template:1.0.0
+sources:
+  app: d3drgt-nova-app-template:1.0.0
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+- listen_port: 8080
+- listen_port: 18001
+egress:
+  allow:
+  - '**'
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+storage:
+  s3:
+    enabled: false
+    bucket: nova-app-storage-prod
+    prefix: apps/d3drgt/
+    region: us-west-1
+helios_rpc:
+  enabled: false
+  kind: ethereum
+  network: mainnet
+  execution_rpc: ''
