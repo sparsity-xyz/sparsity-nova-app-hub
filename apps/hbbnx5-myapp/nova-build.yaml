@@ -1,0 +1,9 @@
+name: hbbnx5-myapp
+version: 0.1.0
+repo: https://github.com/user/repo
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: ''
