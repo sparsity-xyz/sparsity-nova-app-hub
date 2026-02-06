@@ -1,0 +1,9 @@
+name: 5skc2c-myapp
+version: 0.1.0
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: ''
