@@ -1,0 +1,9 @@
+name: cuqbx8-nova-test-agent
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: ''
