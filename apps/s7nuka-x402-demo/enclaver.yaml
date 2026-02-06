@@ -1,0 +1,31 @@
+version: v1
+name: s7nuka-x402-demo
+target: nova-apps/s7nuka-x402-demo:1
+sources:
+  app: s7nuka-x402-demo:1
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+- listen_port: 3000
+- listen_port: 18001
+egress:
+  allow:
+  - '**'
+  - 0.0.0.0/0
+  - ::/0
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+storage:
+  s3:
+    enabled: true
+    bucket: nova-app-storage-prod
+    prefix: apps/s7nuka/
+    region: us-west-1
+helios_rpc:
+  enabled: false
+  kind: ethereum
+  network: ''
+  execution_rpc: ''
