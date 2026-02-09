@@ -1,0 +1,9 @@
+name: tdsxd8-nova-decentralized-kms
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-kms
+ref: main
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: kms
