@@ -1,8 +1,8 @@
 version: v1
 name: xdx2jw-skale-agent
-target: nova-apps/xdx2jw-skale-agent:1.0.0
+target: nova-apps/xdx2jw-skale-agent:1.0.1
 sources:
-  app: xdx2jw-skale-agent:1.0.0
+  app: xdx2jw-skale-agent:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048

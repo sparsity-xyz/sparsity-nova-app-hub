@@ -1,9 +1,9 @@
 name: xdx2jw-skale-agent
-version: 1.0.0
+version: 1.0.1
 repo: https://github.com/chuwt/SKALE-agent
 ref: main
 build:
   directory: server
   dockerfile: Dockerfile
 metadata:
-  description: ''
+  description: SKALE agent application - trying root directory build
