@@ -1,0 +1,9 @@
+name: nehfp9-skale-agent
+version: 1.0.0
+repo: https://github.com/chuwt/SKALE-agent
+ref: main
+build:
+  directory: server
+  dockerfile: Dockerfile
+metadata:
+  description: ''
