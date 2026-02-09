@@ -1,8 +1,8 @@
 version: v1
 name: q9dwpw-another-secured-chat-bot
-target: nova-apps/q9dwpw-another-secured-chat-bot:1.0.0
+target: nova-apps/q9dwpw-another-secured-chat-bot:1.0.1
 sources:
-  app: q9dwpw-another-secured-chat-bot:1.0.0
+  app: q9dwpw-another-secured-chat-bot:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
