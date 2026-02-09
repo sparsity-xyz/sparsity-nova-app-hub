@@ -1,0 +1,9 @@
+name: 82f5qs-new-chat-bot
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+ref: main
+build:
+  directory: secured-chat-bot
+  dockerfile: Dockerfile
+metadata:
+  description: newly updated chat bot
