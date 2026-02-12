@@ -1,8 +1,8 @@
 version: v1
 name: z37gs8-nova-kms-client
-target: nova-apps/z37gs8-nova-kms-client:2.0.2
+target: nova-apps/z37gs8-nova-kms-client:2.0.3
 sources:
-  app: z37gs8-nova-kms-client:2.0.2
+  app: z37gs8-nova-kms-client:2.0.3
 defaults:
   cpu_count: 2
   memory_mb: 2048
