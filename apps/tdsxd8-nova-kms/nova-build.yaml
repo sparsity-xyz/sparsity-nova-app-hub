@@ -1,5 +1,5 @@
 name: tdsxd8-nova-kms
-version: 1.2.5
+version: 1.2.6
 repo: https://github.com/sparsity-xyz/nova-kms
 ref: main
 build:
