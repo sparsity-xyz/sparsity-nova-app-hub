@@ -1,8 +1,8 @@
 version: v1
 name: tdsxd8-nova-kms
-target: nova-apps/tdsxd8-nova-kms:1.2.6
+target: nova-apps/tdsxd8-nova-kms:1.2.7
 sources:
-  app: tdsxd8-nova-kms:1.2.6
+  app: tdsxd8-nova-kms:1.2.7
 defaults:
   cpu_count: 2
   memory_mb: 2048
