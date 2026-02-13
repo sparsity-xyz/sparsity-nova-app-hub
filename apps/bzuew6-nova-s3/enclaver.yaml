@@ -1,8 +1,8 @@
 version: v1
 name: bzuew6-nova-s3
-target: nova-apps/bzuew6-nova-s3:1.0.2
+target: nova-apps/bzuew6-nova-s3:1.0.3
 sources:
-  app: bzuew6-nova-s3:1.0.2
+  app: bzuew6-nova-s3:1.0.3
 defaults:
   cpu_count: 2
   memory_mb: 2048

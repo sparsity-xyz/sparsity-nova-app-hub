@@ -1,5 +1,5 @@
 name: bzuew6-nova-s3
-version: 1.0.2
+version: 1.0.3
 repo: https://github.com/sparsity-xyz/nova-s3
 ref: main
 build:
