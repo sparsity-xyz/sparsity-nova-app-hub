@@ -1,0 +1,9 @@
+name: pcmyds-s3
+version: '1'
+repo: https://github.com/sparsity-xyz/nova-s3
+ref: main
+build:
+  directory: server
+  dockerfile: Dockerfile
+metadata:
+  description: ''
