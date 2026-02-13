@@ -1,0 +1,31 @@
+version: v1
+name: bzuew6-nova-s3
+target: nova-apps/bzuew6-nova-s3:1.0.0
+sources:
+  app: bzuew6-nova-s3:1.0.0
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+- listen_port: 3000
+- listen_port: 18001
+egress:
+  allow:
+  - '**'
+  - 0.0.0.0/0
+  - ::/0
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+storage:
+  s3:
+    enabled: true
+    bucket: nova-app-storage-prod
+    prefix: apps/bzuew6/
+    region: us-west-1
+helios_rpc:
+  enabled: false
+  kind: ethereum
+  network: ''
+  execution_rpc: ''
