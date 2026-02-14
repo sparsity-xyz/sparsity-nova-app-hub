@@ -1,8 +1,8 @@
 version: v1
 name: 6yp3by-new-kms-client
-target: nova-apps/6yp3by-new-kms-client:3.0.1
+target: nova-apps/6yp3by-new-kms-client:3.0.2
 sources:
-  app: 6yp3by-new-kms-client:3.0.1
+  app: 6yp3by-new-kms-client:3.0.2
 defaults:
   cpu_count: 2
   memory_mb: 2048

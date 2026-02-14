@@ -1,5 +1,5 @@
 name: 6yp3by-new-kms-client
-version: 3.0.1
+version: 3.0.2
 repo: https://github.com/sparsity-xyz/nova-kms
 ref: main
 build:
