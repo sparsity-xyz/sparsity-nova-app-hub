@@ -1,5 +1,5 @@
 name: 6yp3by-new-kms-client
-version: 1.0.0
+version: 1.0.1
 repo: https://github.com/sparsity-xyz/nova-kms
 ref: performtube
 build:
