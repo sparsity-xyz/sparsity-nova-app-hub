@@ -1,7 +1,7 @@
 name: tdsxd8-nova-kms
-version: 3.0.3
+version: 3.0.4
 repo: https://github.com/sparsity-xyz/nova-kms
-ref: performtube
+ref: main
 build:
   directory: /
   dockerfile: Dockerfile
