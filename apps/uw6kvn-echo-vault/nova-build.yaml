@@ -1,0 +1,10 @@
+name: uw6kvn-echo-vault
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/sparsity-nova-examples
+ref: main
+build:
+  directory: echo-vault
+  dockerfile: Dockerfile
+metadata:
+  description: 'Echo Vault is a TEE-backed vault whose behavior is simple, deterministic,
+    and remotely attestable: all inbound transfers are echoed back to the sender.'
