@@ -1,8 +1,8 @@
 version: v1
 name: ckrbx8-nova-kms-cluster-demo-client
-target: nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.0.0
+target: nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.1.0
 sources:
-  app: ckrbx8-nova-kms-cluster-demo-client:1.0.0
+  app: ckrbx8-nova-kms-cluster-demo-client:1.1.0
 defaults:
   cpu_count: 2
   memory_mb: 2048
