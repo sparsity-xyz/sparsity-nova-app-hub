@@ -1,0 +1,11 @@
+name: ntsfp9-nova-kms-cluster
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-kms
+ref: enhance
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: Distributed Key Management Service for the Nova Platform. Runs inside
+    AWS Nitro Enclaves and provides key derivation and an in-memory KV store to other
+    Nova applications
