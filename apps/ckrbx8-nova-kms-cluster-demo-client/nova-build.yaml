@@ -1,0 +1,9 @@
+name: ckrbx8-nova-kms-cluster-demo-client
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-kms/
+ref: enhance
+build:
+  directory: demo-client
+  dockerfile: Dockerfile
+metadata:
+  description: A demo Nova application that securely interacts with the Nova KMS Cluster

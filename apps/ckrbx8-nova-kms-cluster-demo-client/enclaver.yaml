@@ -1,0 +1,31 @@
+version: v1
+name: ckrbx8-nova-kms-cluster-demo-client
+target: nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.0.0
+sources:
+  app: ckrbx8-nova-kms-cluster-demo-client:1.0.0
+defaults:
+  cpu_count: 2
+  memory_mb: 2048
+ingress:
+- listen_port: 8000
+- listen_port: 18001
+egress:
+  allow:
+  - '**'
+  - 0.0.0.0/0
+  - ::/0
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+storage:
+  s3:
+    enabled: false
+    bucket: nova-app-storage-prod
+    prefix: apps/ckrbx8/
+    region: us-west-1
+helios_rpc:
+  enabled: true
+  kind: opstack
+  network: base-sepolia
+  execution_rpc: https://sepolia.base.org
