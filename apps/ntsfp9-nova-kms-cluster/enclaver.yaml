@@ -1,8 +1,8 @@
 version: v1
 name: ntsfp9-nova-kms-cluster
-target: nova-apps/ntsfp9-nova-kms-cluster:1.2.0
+target: nova-apps/ntsfp9-nova-kms-cluster:1.3.0
 sources:
-  app: ntsfp9-nova-kms-cluster:1.2.0
+  app: ntsfp9-nova-kms-cluster:1.3.0
 defaults:
   cpu_count: 2
   memory_mb: 2048
