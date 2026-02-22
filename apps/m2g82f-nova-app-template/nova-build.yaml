@@ -1,0 +1,9 @@
+name: m2g82f-nova-app-template
+version: 1.0.0
+repo: https://github.com/sparsity-xyz/nova-app-template
+ref: f2_refactor
+build:
+  directory: /
+  dockerfile: Dockerfile
+metadata:
+  description: app template for nova platform
