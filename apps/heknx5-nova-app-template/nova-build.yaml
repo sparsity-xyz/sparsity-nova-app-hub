@@ -1,9 +1,10 @@
-name: heknx5-nova-app-template
-version: 1..02
-repo: https://github.com/sparsity-xyz/nova-app-template
-ref: main
+name: "heknx5-nova-app-template"
+version: "1.0.3"
+repo: "https://github.com/sparsity-xyz/nova-app-template"
+ref: "main"
 build:
-  directory: /
-  dockerfile: Dockerfile
+  directory: "/"
+  dockerfile: "Dockerfile"
+
 metadata:
-  description: ''
+  description: ""
