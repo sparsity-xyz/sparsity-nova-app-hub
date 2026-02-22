@@ -1,8 +1,8 @@
 version: v1
 name: heknx5-nova-app-template
-target: nova-apps/heknx5-nova-app-template:1.0.0
+target: nova-apps/heknx5-nova-app-template:1.0.1
 sources:
-  app: heknx5-nova-app-template:1.0.0
+  app: heknx5-nova-app-template:1.0.1
 defaults:
   cpu_count: 2
   memory_mb: 2048
@@ -34,36 +34,24 @@ kms_integration:
   enabled: true
   kms_app_id: 49
   nova_app_registry: '0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8'
-  registry_chain_rpc: https://sepolia.base.org
-  base_urls:
-  - https://kms.nova.sparsity.cloud
-  request_timeout_ms: 3000
-  max_retries: 2
-  discovery_ttl_ms: 15000
-  require_mutual_signature: true
-  audit_log_path: /tmp/odyn_kms_audit.log
-  reserved_derive_prefixes:
-  - wallet/eth/app/
-chain_access:
-  registry_chain:
+helios_rpc:
+  enabled: true
+  chains:
+  - name: L2-base-sepolia
+    network_id: '84532'
     kind: opstack
     network: base-sepolia
     execution_rpc: https://sepolia.base.org
     local_rpc_port: 18545
-  app_rpc_providers:
-    '1':
-      kind: ethereum
-      network: mainnet
-      execution_rpc: https://eth.llamarpc.com
-      local_rpc_port: 18546
-    '10':
-      kind: opstack
-      network: op-mainnet
-      execution_rpc: https://mainnet.optimism.io
-      local_rpc_port: 18551
-helios_rpc:
-  enabled: true
-  kind: opstack
-  network: base-sepolia
-  execution_rpc: https://sepolia.base.org
-  listen_port: 18545
+  - name: ethereum-mainnet
+    network_id: '1'
+    kind: ethereum
+    network: mainnet
+    execution_rpc: https://eth.llamarpc.com
+    local_rpc_port: 18546
+  - name: L2-op-mainnet
+    network_id: '10'
+    kind: opstack
+    network: op-mainnet
+    execution_rpc: https://mainnet.optimism.io
+    local_rpc_port: 18551
