@@ -1,19 +1,19 @@
 version: v1
 name: heknx5-nova-app-template
-target: nova-apps/heknx5-nova-app-template:1.0.1
+target: nova-apps/heknx5-nova-app-template:1..02
 sources:
-  app: heknx5-nova-app-template:1.0.1
+  app: heknx5-nova-app-template:1..02
 defaults:
   cpu_count: 2
   memory_mb: 2048
 ingress:
-- listen_port: 8000
-- listen_port: 18001
+  - listen_port: 8000
+  - listen_port: 18001
 egress:
   allow:
-  - '**'
-  - 0.0.0.0/0
-  - ::/0
+    - '**'
+    - 0.0.0.0/0
+    - ::/0
 api:
   listen_port: 18000
 aux_api:
@@ -37,21 +37,21 @@ kms_integration:
 helios_rpc:
   enabled: true
   chains:
-  - name: L2-base-sepolia
-    network_id: '84532'
-    kind: opstack
-    network: base-sepolia
-    execution_rpc: https://sepolia.base.org
-    local_rpc_port: 18545
-  - name: ethereum-mainnet
-    network_id: '1'
-    kind: ethereum
-    network: mainnet
-    execution_rpc: https://eth.llamarpc.com
-    local_rpc_port: 18546
-  - name: L2-op-mainnet
-    network_id: '10'
-    kind: opstack
-    network: op-mainnet
-    execution_rpc: https://mainnet.optimism.io
-    local_rpc_port: 18551
+    - name: L2-base-sepolia
+      network_id: '84532'
+      kind: opstack
+      network: base-sepolia
+      execution_rpc: https://sepolia.base.org
+      local_rpc_port: 18545
+    - name: ethereum-mainnet
+      network_id: '1'
+      kind: ethereum
+      network: mainnet
+      execution_rpc: https://eth.llamarpc.com
+      local_rpc_port: 18546
+    - name: L2-op-mainnet
+      network_id: '10'
+      kind: opstack
+      network: op-mainnet
+      execution_rpc: https://mainnet.optimism.io
+      local_rpc_port: 18551
