@@ -1,31 +1,57 @@
 version: v1
-name: ckrbx8-nova-kms-cluster-demo-client
-target: nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.1.0
+# Application name (must match nova-build.yaml)
+name: "ckrbx8-nova-kms-cluster-demo-client"
+
+# Target image (updated by build workflow in app-hub)
+target: "nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.2.0"
+
 sources:
-  app: ckrbx8-nova-kms-cluster-demo-client:1.1.0
+  # Application image (updated by build workflow in app-hub)
+  app: "ckrbx8-nova-kms-cluster-demo-client:1.2.0"
+
 defaults:
   cpu_count: 2
   memory_mb: 2048
 ingress:
-- listen_port: 8000
-- listen_port: 18001
+  - listen_port: 8000
+  - listen_port: 18001
 egress:
   allow:
-  - '**'
-  - 0.0.0.0/0
-  - ::/0
+    - '**'
+    - 0.0.0.0/0
+    - ::/0
+
+
 api:
   listen_port: 18000
 aux_api:
   listen_port: 18001
+# S3 Storage Configuration
 storage:
   s3:
     enabled: false
-    bucket: nova-app-storage-prod
-    prefix: apps/ckrbx8/
-    region: us-west-1
+    bucket: "nova-app-storage-prod"
+    prefix: "apps/ckrbx8/"
+    region: "us-west-1"
+    encryption:
+      mode: "plaintext"
+      key_scope: "object"
+      aad_mode: "key"
+      key_version: "v1"
+      accept_plaintext: true
+kms_integration:
+  enabled: false
+  use_app_wallet: false
+  kms_app_id: 49
+  nova_app_registry: "0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8"
+# Helios Light Client RPC
 helios_rpc:
   enabled: true
-  kind: opstack
-  network: base-sepolia
-  execution_rpc: https://sepolia.base.org
+  chains:
+    - name: L2-base-sepolia
+      network_id: '84532'
+      kind: opstack
+      network: base-sepolia
+      execution_rpc: https://sepolia.base.org
+      local_rpc_port: 18545
+
