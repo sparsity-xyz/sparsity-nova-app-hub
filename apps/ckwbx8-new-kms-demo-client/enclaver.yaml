@@ -3,11 +3,11 @@ version: v1
 name: "ckwbx8-new-kms-demo-client"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ckwbx8-new-kms-demo-client:1.0.8"
+target: "nova-apps/ckwbx8-new-kms-demo-client:1.0.9"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ckwbx8-new-kms-demo-client:1.0.8"
+  app: "ckwbx8-new-kms-demo-client:1.0.9"
 
 defaults:
   cpu_count: 2
