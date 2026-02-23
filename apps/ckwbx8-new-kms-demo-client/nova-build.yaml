@@ -1,5 +1,5 @@
 name: "ckwbx8-new-kms-demo-client"
-version: "1.0.3"
+version: "1.0.4"
 repo: "https://github.com/sparsity-xyz/nova-kms"
 ref: "w0223"
 build:
