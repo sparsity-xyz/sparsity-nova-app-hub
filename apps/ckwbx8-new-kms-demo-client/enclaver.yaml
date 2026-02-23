@@ -3,11 +3,11 @@ version: v1
 name: "ckwbx8-new-kms-demo-client"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ckwbx8-new-kms-demo-client:1.0.2"
+target: "nova-apps/ckwbx8-new-kms-demo-client:1.0.3"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ckwbx8-new-kms-demo-client:1.0.2"
+  app: "ckwbx8-new-kms-demo-client:1.0.3"
 
 defaults:
   cpu_count: 2
@@ -41,6 +41,7 @@ storage:
       accept_plaintext: true
 kms_integration:
   enabled: true
+  use_app_wallet: false
   kms_app_id: 49
   nova_app_registry: "0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8"
 # Helios Light Client RPC
