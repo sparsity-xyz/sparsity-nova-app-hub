@@ -3,11 +3,11 @@ version: v1
 name: "ckwbx8-nova-kms-demo-client-enclaver"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ckwbx8-nova-kms-demo-client-enclaver:1.2.0"
+target: "nova-apps/ckwbx8-nova-kms-demo-client-enclaver:1.2.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ckwbx8-nova-kms-demo-client-enclaver:1.2.0"
+  app: "ckwbx8-nova-kms-demo-client-enclaver:1.2.1"
 
 defaults:
   cpu_count: 2
