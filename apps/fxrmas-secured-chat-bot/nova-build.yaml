@@ -1,0 +1,10 @@
+name: "fxrmas-secured-chat-bot"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "main"
+build:
+  directory: "secured-chat-bot"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
