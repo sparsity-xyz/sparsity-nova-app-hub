@@ -3,11 +3,11 @@ version: v1
 name: "heknx5-nova-app-template"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/heknx5-nova-app-template:1.0.8"
+target: "nova-apps/heknx5-nova-app-template:1.0.9"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "heknx5-nova-app-template:1.0.8"
+  app: "heknx5-nova-app-template:1.0.9"
 
 defaults:
   cpu_count: 2
@@ -61,7 +61,7 @@ helios_rpc:
       network: mainnet
       execution_rpc: https://eth.llamarpc.com
       local_rpc_port: 18546
-      consensus_rpc: https://lodestar-mainnet.chainsafe.io
+      consensus_rpc: https://ethereum.operationsolarstorm.org
     - name: L2-op-mainnet
       network_id: '10'
       kind: opstack

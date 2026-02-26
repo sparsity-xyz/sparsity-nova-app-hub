@@ -1,5 +1,5 @@
 name: "heknx5-nova-app-template"
-version: "1.0.8"
+version: "1.0.9"
 repo: "https://github.com/sparsity-xyz/nova-app-template"
 ref: "main"
 build:
