@@ -3,11 +3,11 @@ version: v1
 name: "ckrbx8-nova-kms-cluster-demo-client"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.3.0"
+target: "nova-apps/ckrbx8-nova-kms-cluster-demo-client:1.3.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ckrbx8-nova-kms-cluster-demo-client:1.3.0"
+  app: "ckrbx8-nova-kms-cluster-demo-client:1.3.1"
 
 defaults:
   cpu_count: 2
@@ -54,4 +54,5 @@ helios_rpc:
       network: base-sepolia
       execution_rpc: https://sepolia.base.org
       local_rpc_port: 18545
+      consensus_rpc: https://base-sepolia.operationsolarstorm.org
 
