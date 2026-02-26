@@ -3,15 +3,15 @@ version: v1
 name: "heknx5-nova-app-template"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/heknx5-nova-app-template:1.0.4"
+target: "nova-apps/heknx5-nova-app-template:1.0.5"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "heknx5-nova-app-template:1.0.4"
+  app: "heknx5-nova-app-template:1.0.5"
 
 defaults:
   cpu_count: 2
-  memory_mb: 2048
+  memory_mb: 4096
 ingress:
   - listen_port: 8000
   - listen_port: 18001
@@ -41,6 +41,7 @@ storage:
       accept_plaintext: true
 kms_integration:
   enabled: true
+  use_app_wallet: true
   kms_app_id: 49
   nova_app_registry: "0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8"
 # Helios Light Client RPC
