@@ -1,7 +1,7 @@
 name: "5u6c2c-echo-vault"
-version: "v0.1.2"
+version: "v0.1.3"
 repo: "https://github.com/zfdang/echo-vault"
-ref: "72301958b0deb11097c909ad28b67c9f5292b718"
+ref: "0a63cbe5d33161f9850abf20c56952fdebeaf848"
 build:
   directory: "."
   dockerfile: "Dockerfile"
