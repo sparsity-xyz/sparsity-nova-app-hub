@@ -3,11 +3,11 @@ version: v1
 name: "heknx5-nova-app-template"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/heknx5-nova-app-template:1.0.7"
+target: "nova-apps/heknx5-nova-app-template:1.0.8"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "heknx5-nova-app-template:1.0.7"
+  app: "heknx5-nova-app-template:1.0.8"
 
 defaults:
   cpu_count: 2
