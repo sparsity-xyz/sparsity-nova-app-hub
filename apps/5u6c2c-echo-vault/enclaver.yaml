@@ -3,11 +3,11 @@ version: v1
 name: "5u6c2c-echo-vault"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/5u6c2c-echo-vault:v0.1.4"
+target: "nova-apps/5u6c2c-echo-vault:v0.1.5"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "5u6c2c-echo-vault:v0.1.4"
+  app: "5u6c2c-echo-vault:v0.1.5"
 
 defaults:
   cpu_count: 2

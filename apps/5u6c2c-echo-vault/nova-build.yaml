@@ -1,5 +1,5 @@
 name: "5u6c2c-echo-vault"
-version: "v0.1.4"
+version: "v0.1.5"
 repo: "https://github.com/zfdang/echo-vault"
 ref: "06d6d5793b2ad6be55a4979234f8f5f3bcf3d5d0"
 build:
