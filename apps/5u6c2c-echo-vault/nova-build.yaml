@@ -1,0 +1,10 @@
+name: "5u6c2c-echo-vault"
+version: "v0.1.0"
+repo: "https://github.com/zfdang/echo-vault"
+ref: "bb0ea861c6140be477d8526ea4f39e2e9b235a20"
+build:
+  directory: "."
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "TEE app that echoes ETH transfers back on Base Sepolia"
