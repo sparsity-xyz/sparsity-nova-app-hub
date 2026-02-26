@@ -1,0 +1,10 @@
+name: "gv8dcq-echo-vault-v2"
+version: "v1.0.0"
+repo: "https://github.com/zfdang/echo-vault"
+ref: "18a14521eb32bbf9446360201f8846011860c0ce"
+build:
+  directory: "."
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "TEE echo vault on Base Sepolia with Helios RPC"
