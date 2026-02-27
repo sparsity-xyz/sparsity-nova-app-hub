@@ -1,0 +1,10 @@
+name: "a5dpp7-hello-tee"
+version: "v1.0.0"
+repo: "https://github.com/zfdang/hello-nova-tee"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Hello World TEE app with wallet address"
