@@ -1,0 +1,10 @@
+name: "m2p82f-simple-hello-world"
+version: "1.0.0"
+repo: "https://github.com/zfdang/simple-hello"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
