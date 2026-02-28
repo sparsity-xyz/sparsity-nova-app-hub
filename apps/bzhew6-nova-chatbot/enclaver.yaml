@@ -3,11 +3,11 @@ version: v1
 name: "bzhew6-nova-chatbot"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/bzhew6-nova-chatbot:1.2.0"
+target: "nova-apps/bzhew6-nova-chatbot:1.3.0"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "bzhew6-nova-chatbot:1.2.0"
+  app: "bzhew6-nova-chatbot:1.3.0"
 
 defaults:
   cpu_count: 2
