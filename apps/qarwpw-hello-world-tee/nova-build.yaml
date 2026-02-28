@@ -1,0 +1,10 @@
+name: "qarwpw-hello-world-tee"
+version: "1.0.0"
+repo: "https://github.com/zfdang/hello-world-tee"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
