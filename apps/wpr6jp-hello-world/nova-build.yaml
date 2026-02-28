@@ -1,0 +1,10 @@
+name: "wpr6jp-hello-world"
+version: "1.0.0"
+repo: "https://github.com/zfdang/nova-hello-world"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
