@@ -1,0 +1,10 @@
+name: "rjk7ft-hello-tee"
+version: "1.0.0"
+repo: "https://github.com/zfdang/hello-tee"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
