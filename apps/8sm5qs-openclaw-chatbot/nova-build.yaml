@@ -1,0 +1,10 @@
+name: "8sm5qs-openclaw-chatbot"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/openclaw-created-nova-app-chatbot"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
