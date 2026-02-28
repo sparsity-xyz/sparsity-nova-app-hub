@@ -1,5 +1,5 @@
 name: "bzhew6-nova-chatbot"
-version: "1.3.0"
+version: "1.4.0"
 repo: "https://github.com/sparsity-xyz/openclaw-created-nova-app-chatbot"
 ref: "main"
 build:
