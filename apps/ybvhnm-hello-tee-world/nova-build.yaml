@@ -1,0 +1,10 @@
+name: "ybvhnm-hello-tee-world"
+version: "1.0.0"
+repo: "https://github.com/zfdang/helloteeworld"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
