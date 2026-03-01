@@ -1,0 +1,10 @@
+name: "djqrgt-nova-chatbot"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/openclaw-created-nova-app-chatbot"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
