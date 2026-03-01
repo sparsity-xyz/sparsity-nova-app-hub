@@ -1,0 +1,45 @@
+version: v1
+# Application name (must match nova-build.yaml)
+name: "ntnfp9-hello-world-tee"
+
+# Target image (updated by build workflow in app-hub)
+target: "nova-apps/ntnfp9-hello-world-tee:1.0.0"
+
+sources:
+  # Application image (updated by build workflow in app-hub)
+  app: "ntnfp9-hello-world-tee:1.0.0"
+
+defaults:
+  cpu_count: 2
+  memory_mb: 4096
+ingress:
+  - listen_port: 8080
+  - listen_port: 18001
+egress:
+  allow:
+    - '**'
+
+
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+# S3 Storage Configuration
+storage:
+  s3:
+    enabled: false
+    bucket: "nova-app-storage-prod"
+    prefix: "apps/ntnfp9/"
+    region: "us-west-1"
+    encryption:
+      mode: "plaintext"
+      key_scope: "object"
+      aad_mode: "key"
+      key_version: "v1"
+      accept_plaintext: true
+kms_integration:
+  enabled: false
+  use_app_wallet: false
+  kms_app_id: 49
+  nova_app_registry: "0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8"
+
