@@ -3,11 +3,11 @@ version: v1
 name: "truxd8-nova-hi-chatbot"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/truxd8-nova-hi-chatbot:1.1.0"
+target: "nova-apps/truxd8-nova-hi-chatbot:1.2.0"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "truxd8-nova-hi-chatbot:1.1.0"
+  app: "truxd8-nova-hi-chatbot:1.2.0"
 
 defaults:
   cpu_count: 2
