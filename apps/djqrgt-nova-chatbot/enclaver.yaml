@@ -3,11 +3,11 @@ version: v1
 name: "djqrgt-nova-chatbot"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/djqrgt-nova-chatbot:1.0.2"
+target: "nova-apps/djqrgt-nova-chatbot:1.0.3"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "djqrgt-nova-chatbot:1.0.2"
+  app: "djqrgt-nova-chatbot:1.0.3"
 
 defaults:
   cpu_count: 2
