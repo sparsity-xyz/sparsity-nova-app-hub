@@ -1,0 +1,10 @@
+name: "bgkew6-hello-nova"
+version: "1.0.0"
+repo: "https://github.com/zfdang/hello-nova"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
