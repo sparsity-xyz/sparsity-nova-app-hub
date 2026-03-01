@@ -1,0 +1,10 @@
+name: "x7s2jw-nova-chatbot-v2"
+version: "2.0.0"
+repo: "https://github.com/sparsity-xyz/openclaw-created-nova-app-chatbot"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
