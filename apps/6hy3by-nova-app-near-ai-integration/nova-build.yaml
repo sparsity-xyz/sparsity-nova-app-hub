@@ -1,0 +1,10 @@
+name: "6hy3by-nova-app-near-ai-integration"
+version: "1.0.0"
+repo: "https://github.com/zfdang/nova-app-near-ai-integration"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: ""
