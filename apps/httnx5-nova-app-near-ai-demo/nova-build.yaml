@@ -1,5 +1,5 @@
 name: "httnx5-nova-app-near-ai-demo"
-version: "v1.0.0"
+version: "v1.0.1"
 repo: "https://github.com/zfdang/nova-app-near-ai-demo"
 ref: "main"
 build:

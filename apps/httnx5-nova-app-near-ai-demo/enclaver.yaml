@@ -3,11 +3,11 @@ version: v1
 name: "httnx5-nova-app-near-ai-demo"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/httnx5-nova-app-near-ai-demo:v1.0.0"
+target: "nova-apps/httnx5-nova-app-near-ai-demo:v1.0.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "httnx5-nova-app-near-ai-demo:v1.0.0"
+  app: "httnx5-nova-app-near-ai-demo:v1.0.1"
 
 defaults:
   cpu_count: 2
