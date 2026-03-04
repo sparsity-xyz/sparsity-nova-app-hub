@@ -1,0 +1,114 @@
+version: v1
+# Application name (must match nova-build.yaml)
+name: "5kgc2c-nova-mockup-service"
+
+# Target image (updated by build workflow in app-hub)
+target: "nova-apps/5kgc2c-nova-mockup-service:1.0.0"
+
+sources:
+  # Application image (updated by build workflow in app-hub)
+  app: "5kgc2c-nova-mockup-service:1.0.0"
+
+defaults:
+  cpu_count: 2
+  memory_mb: 4096
+ingress:
+  - listen_port: 8000
+  - listen_port: 18001
+egress:
+  allow:
+    - '**'
+    - 0.0.0.0/0
+    - ::/0
+
+
+api:
+  listen_port: 18000
+aux_api:
+  listen_port: 18001
+# S3 Storage Configuration
+storage:
+  s3:
+    enabled: true
+    bucket: "nova-app-storage-prod"
+    prefix: "apps/5kgc2c/"
+    region: "us-west-1"
+    encryption:
+      mode: "kms"
+      key_scope: "object"
+      aad_mode: "key"
+      key_version: "v1"
+      accept_plaintext: true
+kms_integration:
+  enabled: true
+  use_app_wallet: true
+  kms_app_id: 49
+  nova_app_registry: "0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8"
+# Helios Light Client RPC
+helios_rpc:
+  enabled: true
+  chains:
+    - name: L2-base-sepolia
+      network_id: '84532'
+      kind: opstack
+      network: base-sepolia
+      execution_rpc: https://sepolia.base.org
+      local_rpc_port: 18545
+      consensus_rpc: https://base-sepolia.operationsolarstorm.org
+    - name: ethereum-mainnet
+      network_id: '1'
+      kind: ethereum
+      network: mainnet
+      execution_rpc: https://ethereum-rpc.publicnode.com
+      local_rpc_port: 18546
+      consensus_rpc: https://ethereum.operationsolarstorm.org
+    - name: L2-op-mainnet
+      network_id: '10'
+      kind: opstack
+      network: op-mainnet
+      execution_rpc: https://mainnet.optimism.io
+      local_rpc_port: 18551
+      consensus_rpc: https://op-mainnet.operationsolarstorm.org
+    - name: ethereum-sepolia
+      network_id: '11155111'
+      kind: ethereum
+      network: sepolia
+      execution_rpc: https://rpc.sepolia.org
+      local_rpc_port: 18547
+      consensus_rpc: https://lodestar-sepolia.chainsafe.io
+    - name: L2-unichain
+      network_id: '130'
+      kind: opstack
+      network: unichain
+      execution_rpc: https://mainnet.unichain.org
+      local_rpc_port: 18554
+      consensus_rpc: https://unichain.operationsolarstorm.org
+    - name: ethereum-holesky
+      network_id: '17000'
+      kind: ethereum
+      network: holesky
+      execution_rpc: https://ethereum-holesky-rpc.publicnode.com
+      local_rpc_port: 18548
+      consensus_rpc: https://lodestar-holesky.chainsafe.io
+    - name: L2-worldchain
+      network_id: '480'
+      kind: opstack
+      network: worldchain
+      execution_rpc: https://worldchain-mainnet.g.alchemy.com/public
+      local_rpc_port: 18552
+      consensus_rpc: https://worldchain.operationsolarstorm.org
+    - name: L2-zora
+      network_id: '7777777'
+      kind: opstack
+      network: zora
+      execution_rpc: https://rpc.zora.energy
+      local_rpc_port: 18553
+      consensus_rpc: https://zora.operationsolarstorm.org
+    - name: L2-base
+      network_id: '8453'
+      kind: opstack
+      network: base
+      execution_rpc: https://mainnet.base.org
+      local_rpc_port: 18549
+      consensus_rpc: https://base.operationsolarstorm.org
+
