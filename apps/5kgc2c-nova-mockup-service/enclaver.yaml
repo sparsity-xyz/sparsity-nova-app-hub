@@ -3,11 +3,11 @@ version: v1
 name: "5kgc2c-nova-mockup-service"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/5kgc2c-nova-mockup-service:1.1.0"
+target: "nova-apps/5kgc2c-nova-mockup-service:1.1.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "5kgc2c-nova-mockup-service:1.1.0"
+  app: "5kgc2c-nova-mockup-service:1.1.1"
 
 defaults:
   # these 2 parameters will be overrided by enclaver runtime with exact values
@@ -74,13 +74,6 @@ helios_rpc:
       execution_rpc: https://ethereum-rpc.publicnode.com
       local_rpc_port: 18546
       consensus_rpc: https://ethereum.operationsolarstorm.org
-    - name: L2-op-mainnet
-      network_id: '10'
-      kind: opstack
-      network: op-mainnet
-      execution_rpc: https://mainnet.optimism.io
-      local_rpc_port: 18551
-      consensus_rpc: https://op-mainnet.operationsolarstorm.org
     - name: ethereum-sepolia
       network_id: '11155111'
       kind: ethereum
@@ -88,39 +81,4 @@ helios_rpc:
       execution_rpc: https://rpc.sepolia.org
       local_rpc_port: 18547
       consensus_rpc: https://lodestar-sepolia.chainsafe.io
-    - name: L2-unichain
-      network_id: '130'
-      kind: opstack
-      network: unichain
-      execution_rpc: https://mainnet.unichain.org
-      local_rpc_port: 18554
-      consensus_rpc: https://unichain.operationsolarstorm.org
-    - name: ethereum-holesky
-      network_id: '17000'
-      kind: ethereum
-      network: holesky
-      execution_rpc: https://ethereum-holesky-rpc.publicnode.com
-      local_rpc_port: 18548
-      consensus_rpc: https://lodestar-holesky.chainsafe.io
-    - name: L2-worldchain
-      network_id: '480'
-      kind: opstack
-      network: worldchain
-      execution_rpc: https://worldchain-mainnet.g.alchemy.com/public
-      local_rpc_port: 18552
-      consensus_rpc: https://worldchain.operationsolarstorm.org
-    - name: L2-zora
-      network_id: '7777777'
-      kind: opstack
-      network: zora
-      execution_rpc: https://rpc.zora.energy
-      local_rpc_port: 18553
-      consensus_rpc: https://zora.operationsolarstorm.org
-    - name: L2-base
-      network_id: '8453'
-      kind: opstack
-      network: base
-      execution_rpc: https://mainnet.base.org
-      local_rpc_port: 18549
-      consensus_rpc: https://base.operationsolarstorm.org
 
