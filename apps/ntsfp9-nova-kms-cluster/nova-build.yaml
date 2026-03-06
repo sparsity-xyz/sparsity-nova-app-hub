@@ -1,5 +1,5 @@
 name: "ntsfp9-nova-kms-cluster"
-version: "2.1.0"
+version: "2.1.1"
 repo: "https://github.com/sparsity-xyz/nova-kms"
 ref: "main"
 build:
