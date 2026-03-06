@@ -3,11 +3,11 @@ version: v1
 name: "ntsfp9-nova-kms-cluster"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ntsfp9-nova-kms-cluster:2.0.2"
+target: "nova-apps/ntsfp9-nova-kms-cluster:2.0.3"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ntsfp9-nova-kms-cluster:2.0.2"
+  app: "ntsfp9-nova-kms-cluster:2.0.3"
 
 defaults:
   # these 2 parameters will be overridden by enclaver runtime with exact values
