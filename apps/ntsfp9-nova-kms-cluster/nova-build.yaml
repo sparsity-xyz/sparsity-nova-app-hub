@@ -1,7 +1,7 @@
 name: "ntsfp9-nova-kms-cluster"
-version: "2.2.0"
+version: "2.2.1"
 repo: "https://github.com/sparsity-xyz/nova-kms"
-ref: "main"
+ref: "refine-lock"
 build:
   directory: "/"
   dockerfile: "Dockerfile"
