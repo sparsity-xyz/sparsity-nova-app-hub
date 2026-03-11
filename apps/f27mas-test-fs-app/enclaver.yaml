@@ -3,11 +3,11 @@ version: v1
 name: "f27mas-test-fs-app"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/f27mas-test-fs-app:1.0.0"
+target: "nova-apps/f27mas-test-fs-app:1.0.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "f27mas-test-fs-app:1.0.0"
+  app: "f27mas-test-fs-app:1.0.1"
 
 defaults:
   # these 2 parameters will be overridden by enclaver runtime with exact values
@@ -46,6 +46,7 @@ storage:
       mount_path: /mnt/appdata
       required: true
       size_mb: 10240
+
 
 kms_integration:
   enabled: false
