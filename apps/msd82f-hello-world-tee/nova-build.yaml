@@ -1,0 +1,10 @@
+name: "msd82f-hello-world-tee"
+version: "v1.0.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples/"
+ref: "main"
+build:
+  directory: "hello-world-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "hello world from TEE"
