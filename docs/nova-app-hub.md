@@ -38,8 +38,10 @@ aws cloudformation describe-stacks \
 |--------|-------|
 | `AWS_ACCESS_KEY_ID` | From CloudFormation output |
 | `AWS_SECRET_ACCESS_KEY` | From CloudFormation output |
-| `DOCKERHUB_USERNAME` | Docker Hub username (to avoid rate limits) |
+| `DOCKERHUB_USERNAME` | Docker Hub username (required for Enclaver builds on GitHub-hosted runners) |
 | `DOCKERHUB_TOKEN` | Docker Hub access token ([create here](https://hub.docker.com/settings/security)) |
+
+Without authenticated Docker Hub access, the Enclaver build stage can fail with `toomanyrequests: Rate exceeded` while `nitro-cli` resolves temporary image tags during EIF generation.
 
 4. Update workflow environment variables in `.github/workflows/build-on-merge.yml`:
 
