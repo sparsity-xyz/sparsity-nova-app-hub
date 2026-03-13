@@ -16,7 +16,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       
@@ -48,7 +48,7 @@ jobs:
           echo "✅ All changed files are valid"
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
       
@@ -168,4 +168,3 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "- \`$file\`" >> $GITHUB_STEP_SUMMARY
           done
-
