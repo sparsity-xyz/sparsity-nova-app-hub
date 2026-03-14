@@ -1,0 +1,10 @@
+name: "5k3c2c-nova-openclaw-installer"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/openclaw-nova-installer"
+ref: "main"
+build:
+  directory: "generated/openclaw-nova-app"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "install openclaw in nova platform"
