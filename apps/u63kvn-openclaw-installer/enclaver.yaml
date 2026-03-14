@@ -3,18 +3,20 @@ version: v1
 name: "u63kvn-openclaw-installer"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/u63kvn-openclaw-installer:1.0.0"
+target: "nova-apps/u63kvn-openclaw-installer:1.0.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "u63kvn-openclaw-installer:1.0.0"
+  app: "u63kvn-openclaw-installer:1.0.1"
 
 defaults:
+  # these 2 parameters will be overridden by enclaver runtime with exact values
   cpu_count: 2
   memory_mb: 4096
 ingress:
   - listen_port: 18789
   - listen_port: 18001
+
 egress:
   allow:
     - '**'
@@ -39,6 +41,8 @@ storage:
       aad_mode: "key"
       key_version: "v1"
       accept_plaintext: true
+
+
 kms_integration:
   enabled: false
   use_app_wallet: false
