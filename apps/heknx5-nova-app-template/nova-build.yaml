@@ -1,0 +1,10 @@
+name: "heknx5-nova-app-template"
+version: "1.3.0"
+repo: "https://github.com/sparsity-xyz/nova-app-template"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "one templalte which demos major capabilities of enclave"
