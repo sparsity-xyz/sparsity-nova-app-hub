@@ -6,8 +6,6 @@ name: PR Validation
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'apps/**'
 
 jobs:
   validate-changes:
@@ -25,8 +23,6 @@ jobs:
         uses: tj-actions/changed-files@v44
         with:
           separator: ","
-          files: |
-            apps/**
       
       - name: Check for unauthorized file changes
         run: |
@@ -89,7 +85,7 @@ jobs:
             # Extract values
             NAME=$(echo "$JSON_CONTENT" | jq -r '.name')
             REPO=$(echo "$JSON_CONTENT" | jq -r '.repo')
-            BRANCH=$(echo "$JSON_CONTENT" | jq -r '.branch // .ref')
+            BRANCH=$(echo "$JSON_CONTENT" | jq -r '.ref')
             DIRECTORY=$(echo "$JSON_CONTENT" | jq -r '.build.directory // "."')
             DOCKERFILE=$(echo "$JSON_CONTENT" | jq -r '.build.dockerfile // "Dockerfile"')
             
