@@ -24,6 +24,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v44
         with:
+          separator: ","
           files: |
             apps/**
       
@@ -32,7 +33,8 @@ jobs:
           echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
           
           # Only allow changes in apps/ directory
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          IFS=',' read -ra FILES <<< "${{ steps.changed-files.outputs.all_changed_files }}"
+          for file in "${FILES[@]}"; do
             if [[ ! "$file" =~ ^apps/ ]]; then
               echo "ERROR: Changes outside apps/ directory are not allowed: $file"
               exit 1
@@ -62,7 +64,8 @@ jobs:
         run: |
           SCHEMA_FILE="schemas/nova-build.schema.json"
           
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          IFS=',' read -ra FILES <<< "${{ steps.changed-files.outputs.all_changed_files }}"
+          for file in "${FILES[@]}"; do
             if [[ ! "$file" =~ /nova-build\.yaml$ ]]; then
               echo "Skipping non-build config file: $file"
               continue
@@ -86,7 +89,7 @@ jobs:
             # Extract values
             NAME=$(echo "$JSON_CONTENT" | jq -r '.name')
             REPO=$(echo "$JSON_CONTENT" | jq -r '.repo')
-            BRANCH=$(echo "$JSON_CONTENT" | jq -r '.branch')
+            BRANCH=$(echo "$JSON_CONTENT" | jq -r '.branch // .ref')
             DIRECTORY=$(echo "$JSON_CONTENT" | jq -r '.build.directory // "."')
             DOCKERFILE=$(echo "$JSON_CONTENT" | jq -r '.build.dockerfile // "Dockerfile"')
             
@@ -101,7 +104,7 @@ jobs:
             echo "Normalized directory: $DIRECTORY"
             
             # Validate directory name matches app name
-            DIR_NAME=$(dirname "$file" | xargs basename)
+            DIR_NAME=$(basename "$(dirname "$file")")
             if [ "$DIR_NAME" != "$NAME" ]; then
               echo "ERROR: Directory name '$DIR_NAME' must match app name '$NAME'"
               exit 1
@@ -165,6 +168,7 @@ jobs:
           echo "✅ All validations passed!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Validated Files:" >> $GITHUB_STEP_SUMMARY
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          IFS=',' read -ra FILES <<< "${{ steps.changed-files.outputs.all_changed_files }}"
+          for file in "${FILES[@]}"; do
             echo "- \`$file\`" >> $GITHUB_STEP_SUMMARY
           done
