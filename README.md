@@ -204,7 +204,7 @@ Most newer instance types: `m5.xlarge`, `c5.xlarge`, `r5.xlarge`, etc. with `.me
 
 capsule packages your application Docker image into a release image containing:
 1. The EIF (Enclave Image File)
-2. Capsule-Runtime supervisor for ingress/egress, attestation, encryption
+2. Capsule Runtime supervisor for ingress/egress, attestation, encryption
 3. Nitro CLI for enclave lifecycle management
 
 See [capsule documentation](https://github.com/sparsity-xyz/nova-enclave-capsule) for details.
