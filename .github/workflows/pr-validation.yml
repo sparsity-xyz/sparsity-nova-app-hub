@@ -27,18 +27,43 @@ jobs:
       - name: Check for unauthorized file changes
         run: |
           echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
-          
-          # Only allow changes in apps/ directory
+
+          is_allowed_file() {
+            local file="$1"
+
+            if [[ "$file" =~ ^apps/[^/]+/(nova-build\.yaml|capsule\.yaml|BUILD_INFO\.md)$ ]]; then
+              return 0
+            fi
+
+            if [[ "$file" =~ ^\.github/workflows/[^/]+\.yml$ ]]; then
+              return 0
+            fi
+
+            if [[ "$file" == "README.md" || "$file" == "LICENSE" ]]; then
+              return 0
+            fi
+
+            if [[ "$file" =~ ^docs/[^/]+\.md$ ]]; then
+              return 0
+            fi
+
+            if [[ "$file" =~ ^schemas/[^/]+\.json$ ]]; then
+              return 0
+            fi
+
+            if [[ "$file" == "scripts/validate-config.sh" ]]; then
+              return 0
+            fi
+
+            return 1
+          }
+
+          # Allow app configs plus a small set of repository-maintenance files.
           IFS=',' read -ra FILES <<< "${{ steps.changed-files.outputs.all_changed_files }}"
           for file in "${FILES[@]}"; do
-            if [[ ! "$file" =~ ^apps/ ]]; then
-              echo "ERROR: Changes outside apps/ directory are not allowed: $file"
-              exit 1
-            fi
-            
-            # Only allow essential configuration and info files
-            if [[ ! "$file" =~ /(nova-build\.yaml|capsule\.yaml|BUILD_INFO\.md)$ ]]; then
-              echo "ERROR: Only nova-build.yaml, capsule.yaml, and BUILD_INFO.md files are allowed: $file"
+            if ! is_allowed_file "$file"; then
+              echo "ERROR: File is not allowed in PRs: $file"
+              echo "Allowed paths: apps/<app>/(nova-build.yaml|capsule.yaml|BUILD_INFO.md), .github/workflows/*.yml, README.md, LICENSE, docs/*.md, schemas/*.json, scripts/validate-config.sh"
               exit 1
             fi
           done
