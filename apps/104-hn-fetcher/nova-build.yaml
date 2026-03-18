@@ -1,18 +1,10 @@
-name: hn-fetcher
+name: 104-hn-fetcher
 version: 1.1.6
 repo: https://github.com/sparsity-xyz/sparsity-nova-examples
-branch: main
+ref: main
 build:
   directory: hn-fetcher
   dockerfile: Dockerfile
-enclave:
-  debug_mode: false
-capsule:
-  ingress_port: 8080
-  api_port: 9000
-  aux_api_port: 9001
-  cpu_count: 2
-  memory_mb: 2048
-  egress_allow: []
+
 metadata:
   description: my hn-fetcher

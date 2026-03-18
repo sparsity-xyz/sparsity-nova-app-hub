@@ -1,6 +1,6 @@
 name: q4zwpw-hn-fetcher
 version: '1.0.2'
-repo: https://github.com/sparsity-xyz/nova-enclave-capsule/
+repo: https://github.com/sparsity-xyz/nova-enclave-capsule
 ref: sparsity
 build:
   directory: examples/hn-fetcher

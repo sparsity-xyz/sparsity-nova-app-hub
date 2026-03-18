@@ -812,7 +812,6 @@ jobs:
           echo "| PCR | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **PCR0** | \`${{ steps.capsule.outputs.pcr0 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **PCR0** | \`${{ steps.capsule.outputs.pcr0 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **PCR1** | \`${{ steps.capsule.outputs.pcr1 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **PCR2** | \`${{ steps.capsule.outputs.pcr2 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
