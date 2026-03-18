@@ -1,18 +1,18 @@
 version: v1
 # Application name (must match nova-build.yaml)
-name: "nxufp9-hello-world-tee"
+name: "f27mas-test-fs-app"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/nxufp9-hello-world-tee:1.0.0"
+target: "nova-apps/f27mas-test-fs-app:1.0.2"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "nxufp9-hello-world-tee:1.0.0"
+  app: "f27mas-test-fs-app:1.0.2"
 
 defaults:
-  # these 2 parameters will be overridden by enclaver runtime with exact values
+  # these 2 parameters will be overridden by capsule-cli runtime with exact values
   cpu_count: 2
-  memory_mb: 4096
+  memory_mb: 1024
 ingress:
   - listen_port: 8000
   - listen_port: 18001
@@ -33,7 +33,7 @@ storage:
   s3:
     enabled: false
     bucket: "nova-app-storage-prod"
-    prefix: "apps/nxufp9/"
+    prefix: "apps/f27mas/"
     region: "us-west-1"
     encryption:
       mode: "plaintext"
@@ -41,6 +41,13 @@ storage:
       aad_mode: "key"
       key_version: "v1"
       accept_plaintext: true
+  mounts:
+    - name: appdata
+      mount_path: /mnt/appdata
+      required: true
+      size_mb: 10240
+
+
 kms_integration:
   enabled: false
   use_app_wallet: false

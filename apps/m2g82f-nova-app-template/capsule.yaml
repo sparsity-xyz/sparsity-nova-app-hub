@@ -41,7 +41,7 @@ kms_integration:
   max_retries: 2
   discovery_ttl_ms: 15000
   require_mutual_signature: true
-  audit_log_path: /tmp/odyn_kms_audit.log
+  audit_log_path: /tmp/capsule-runtime_kms_audit.log
   reserved_derive_prefixes:
   - wallet/eth/app/
 chain_access:

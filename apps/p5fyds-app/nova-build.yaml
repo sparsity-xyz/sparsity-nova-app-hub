@@ -1,6 +1,6 @@
 name: p5fyds-app
 version: 1.0.0
-repo: https://github.com/sparsity-xyz/enclaver/
+repo: https://github.com/sparsity-xyz/capsule/
 ref: sparsity
 build:
   directory: examples/hn-fetcher

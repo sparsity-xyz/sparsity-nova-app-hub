@@ -1,20 +1,20 @@
 version: v1
 # Application name (must match nova-build.yaml)
-name: "ntsfp9-nova-kms-cluster"
+name: "u63kvn-openclaw-installer"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ntsfp9-nova-kms-cluster:2.3.0"
+target: "nova-apps/u63kvn-openclaw-installer:1.0.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ntsfp9-nova-kms-cluster:2.3.0"
+  app: "u63kvn-openclaw-installer:1.0.1"
 
 defaults:
-  # these 2 parameters will be overridden by enclaver runtime with exact values
+  # these 2 parameters will be overridden by capsule-cli runtime with exact values
   cpu_count: 2
   memory_mb: 4096
 ingress:
-  - listen_port: 8000
+  - listen_port: 18789
   - listen_port: 18001
 
 egress:
@@ -33,7 +33,7 @@ storage:
   s3:
     enabled: false
     bucket: "nova-app-storage-prod"
-    prefix: "apps/ntsfp9/"
+    prefix: "apps/u63kvn/"
     region: "us-west-1"
     encryption:
       mode: "plaintext"
@@ -41,6 +41,8 @@ storage:
       aad_mode: "key"
       key_version: "v1"
       accept_plaintext: true
+
+
 kms_integration:
   enabled: false
   use_app_wallet: false
@@ -50,11 +52,18 @@ kms_integration:
 helios_rpc:
   enabled: true
   chains:
+    - name: L2-base
+      network_id: '8453'
+      kind: opstack
+      network: base
+      execution_rpc: https://mainnet.base.org
+      local_rpc_port: 18549
+      consensus_rpc: https://base.operationsolarstorm.org
     - name: L2-base-sepolia
       network_id: '84532'
       kind: opstack
       network: base-sepolia
       execution_rpc: https://sepolia.base.org
-      local_rpc_port: 18545
+      local_rpc_port: 18550
       consensus_rpc: https://base-sepolia.operationsolarstorm.org
 

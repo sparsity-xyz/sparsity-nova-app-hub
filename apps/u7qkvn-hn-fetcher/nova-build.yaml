@@ -1,6 +1,6 @@
 name: u7qkvn-hn-fetcher
 version: 1.0.1
-repo: https://github.com/sparsity-xyz/enclaver/
+repo: https://github.com/sparsity-xyz/capsule/
 ref: sparsity
 build:
   directory: examples/hn-fetcher

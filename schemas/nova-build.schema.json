@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/sparsity-xyz/sparsity-nova-app-hub/schemas/nova-build.schema.json",
   "title": "Nova Build Configuration",
-  "description": "Schema for Nova App Hub build configuration files. Enclaver configuration is in separate enclaver.yaml file.",
+  "description": "Schema for Nova App Hub build configuration files. Capsule configuration is in separate capsule.yaml file.",
   "type": "object",
   "required": [
     "name",

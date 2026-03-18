@@ -7,7 +7,7 @@ build:
   dockerfile: Dockerfile
 enclave:
   debug_mode: false
-enclaver:
+capsule:
   ingress_port: 8080
   api_port: 9000
   aux_api_port: 9001

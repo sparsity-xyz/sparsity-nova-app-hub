@@ -1,16 +1,16 @@
 version: v1
 # Application name (must match nova-build.yaml)
-name: "cz7bx8-hello-world-tee"
+name: "ntsfp9-nova-kms-cluster"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/cz7bx8-hello-world-tee:1.0.0"
+target: "nova-apps/ntsfp9-nova-kms-cluster:2.3.0"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "cz7bx8-hello-world-tee:1.0.0"
+  app: "ntsfp9-nova-kms-cluster:2.3.0"
 
 defaults:
-  # these 2 parameters will be overridden by enclaver runtime with exact values
+  # these 2 parameters will be overridden by capsule-cli runtime with exact values
   cpu_count: 2
   memory_mb: 4096
 ingress:
@@ -33,7 +33,7 @@ storage:
   s3:
     enabled: false
     bucket: "nova-app-storage-prod"
-    prefix: "apps/cz7bx8/"
+    prefix: "apps/ntsfp9/"
     region: "us-west-1"
     encryption:
       mode: "plaintext"
@@ -46,4 +46,15 @@ kms_integration:
   use_app_wallet: false
   kms_app_id: 49
   nova_app_registry: "0x0f68E6e699f2E972998a1EcC000c7ce103E64cc8"
+# Helios Light Client RPC
+helios_rpc:
+  enabled: true
+  chains:
+    - name: L2-base-sepolia
+      network_id: '84532'
+      kind: opstack
+      network: base-sepolia
+      execution_rpc: https://sepolia.base.org
+      local_rpc_port: 18545
+      consensus_rpc: https://base-sepolia.operationsolarstorm.org
 

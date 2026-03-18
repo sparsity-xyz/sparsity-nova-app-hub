@@ -1,6 +1,6 @@
 name: wjz6jp-hacker-news-fetcher
 version: '1.0.0'
-repo: https://github.com/enclaver-io/enclaver
+repo: https://github.com/capsule-io/capsule
 ref: main
 build:
   directory: example

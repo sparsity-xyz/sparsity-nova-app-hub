@@ -52,9 +52,9 @@ enclave:
   debug_mode: false
 
 
-# [Optional] Enclaver configuration
+# [Optional] Capsule configuration
 # Configure how the enclave runtime operates
-enclaver:
+capsule:
   # Port for ingress traffic into the enclave (your app's HTTP port)
   ingress_port: 8000
   

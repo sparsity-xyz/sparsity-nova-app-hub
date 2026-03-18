@@ -7,4 +7,4 @@ build:
   dockerfile: Dockerfile
 
 metadata:
-  description: mockup service for odyn
+  description: mockup service for capsule-runtime

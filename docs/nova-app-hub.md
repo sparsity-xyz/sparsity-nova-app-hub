@@ -41,7 +41,7 @@ aws cloudformation describe-stacks \
 | `DOCKERHUB_USERNAME` | Docker Hub username (optional, helps if app Dockerfiles pull from Docker Hub) |
 | `DOCKERHUB_TOKEN` | Docker Hub access token ([create here](https://hub.docker.com/settings/security)) |
 
-The build workflow now compiles a custom Enclaver binary that uses a `nitro-cli build-enclave --docker-dir` path for EIF generation, so Docker Hub credentials are no longer required just for the Enclaver stage. They are still useful when the application Dockerfile itself pulls from Docker Hub heavily.
+The build workflow now compiles a custom Capsule binary that uses a `nitro-cli build-enclave --docker-dir` path for EIF generation, so Docker Hub credentials are no longer required just for the Capsule stage. They are still useful when the application Dockerfile itself pulls from Docker Hub heavily.
 
 4. Update workflow environment variables in `.github/workflows/build-on-merge.yml`:
 
@@ -60,7 +60,7 @@ nova-app-hub/
 ├── .github/
 │   └── workflows/
 │       ├── pr-validation.yml       # PR validation
-│       └── build-on-merge.yml      # Build pipeline (Enclaver)
+│       └── build-on-merge.yml      # Build pipeline (Capsule)
 ├── apps/
 │   ├── _example/                   # Example configuration
 │   │   └── nova-build.yaml
@@ -88,7 +88,7 @@ s3://nova-app-hub-artifacts/builds/<app-name>/<version>/
 ├── pcr.json
 ├── build-metadata.json
 ├── build-output.txt
-└── enclaver.yaml
+└── capsule.yaml
 ```
 
 ## Remote Attestation

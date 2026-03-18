@@ -1,31 +1,21 @@
 version: v1
 # Application name (must match nova-build.yaml)
-name: "5kgc2c-nova-mockup-service"
+name: "heknx5-nova-app-template"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/5kgc2c-nova-mockup-service:1.1.2"
+target: "nova-apps/heknx5-nova-app-template:1.2.5"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "5kgc2c-nova-mockup-service:1.1.2"
+  app: "heknx5-nova-app-template:1.2.5"
 
 defaults:
-  # these 2 parameters will be overridden by enclaver runtime with exact values
+  # these 2 parameters will be overridden by capsule-cli runtime with exact values
   cpu_count: 2
   memory_mb: 4096
 ingress:
   - listen_port: 8000
   - listen_port: 18001
-  - listen_port: 18000
-  - listen_port: 18545
-  - listen_port: 18546
-  - listen_port: 18547
-  - listen_port: 18548
-  - listen_port: 18549
-  - listen_port: 18550
-  - listen_port: 18551
-  - listen_port: 18552
-  - listen_port: 18553
 
 egress:
   allow:
@@ -43,7 +33,7 @@ storage:
   s3:
     enabled: true
     bucket: "nova-app-storage-prod"
-    prefix: "apps/5kgc2c/"
+    prefix: "apps/heknx5/"
     region: "us-west-1"
     encryption:
       mode: "kms"
@@ -51,6 +41,13 @@ storage:
       aad_mode: "key"
       key_version: "v1"
       accept_plaintext: true
+  mounts:
+    - name: appdata
+      mount_path: /mnt/appdata
+      required: true
+      size_mb: 10240
+
+
 kms_integration:
   enabled: true
   use_app_wallet: true
@@ -71,14 +68,14 @@ helios_rpc:
       network_id: '1'
       kind: ethereum
       network: mainnet
-      execution_rpc: https://ethereum-rpc.publicnode.com
+      execution_rpc: https://eth.llamarpc.com
       local_rpc_port: 18546
       consensus_rpc: https://ethereum.operationsolarstorm.org
-    - name: ethereum-sepolia
-      network_id: '11155111'
-      kind: ethereum
-      network: sepolia
-      execution_rpc: https://rpc.sepolia.org
-      local_rpc_port: 18547
-      consensus_rpc: https://lodestar-sepolia.chainsafe.io
+    - name: L2-op-mainnet
+      network_id: '10'
+      kind: opstack
+      network: op-mainnet
+      execution_rpc: https://mainnet.optimism.io
+      local_rpc_port: 18551
+      consensus_rpc: https://op-mainnet.operationsolarstorm.org
 

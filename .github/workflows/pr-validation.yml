@@ -39,8 +39,8 @@ jobs:
             fi
             
             # Only allow essential configuration and info files
-            if [[ ! "$file" =~ /(nova-build\.yaml|enclaver\.yaml|BUILD_INFO\.md)$ ]]; then
-              echo "ERROR: Only nova-build.yaml, enclaver.yaml, and BUILD_INFO.md files are allowed: $file"
+            if [[ ! "$file" =~ /(nova-build\.yaml|capsule\.yaml|BUILD_INFO\.md)$ ]]; then
+              echo "ERROR: Only nova-build.yaml, capsule.yaml, and BUILD_INFO.md files are allowed: $file"
               exit 1
             fi
           done
