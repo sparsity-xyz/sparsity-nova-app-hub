@@ -687,7 +687,7 @@ jobs:
           
           ## Release Docker Image
           
-          The release image contains the EIF and capsule-cli runtime:
+            The release image contains the EIF and Capsule runtime assets:
           
           ```
           ${{ steps.capsule.outputs.release_image }}
