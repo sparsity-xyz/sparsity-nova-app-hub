@@ -1,6 +1,6 @@
 # Nova App Hub
 
-A centralized, transparent, and trustworthy build platform for AWS Nitro Enclave applications using [capsule](https://github.com/sparsity-xyz/capsule).
+A centralized, transparent, and trustworthy build platform for AWS Nitro Enclave applications using [capsule](https://github.com/sparsity-xyz/nova-enclave-capsule).
 
 ## Overview
 
@@ -207,7 +207,7 @@ capsule packages your application Docker image into a release image containing:
 2. Capsule-Runtime supervisor for ingress/egress, attestation, encryption
 3. Nitro CLI for enclave lifecycle management
 
-See [capsule documentation](https://github.com/sparsity-xyz/capsule) for details.
+See [capsule documentation](https://github.com/sparsity-xyz/nova-enclave-capsule) for details.
 
 ---
 
