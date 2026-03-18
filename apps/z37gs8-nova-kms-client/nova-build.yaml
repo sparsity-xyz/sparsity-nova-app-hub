@@ -1,9 +1,0 @@
-name: z37gs8-nova-kms-client
-version: 2.0.4
-repo: https://github.com/sparsity-xyz/sparsity-nova-examples
-ref: main
-build:
-  directory: nova-kms-client
-  dockerfile: Dockerfile
-metadata:
-  description: nova app which utilizes nova-kms service
