@@ -1,9 +1,0 @@
-name: mt982f-dfdsfsdf
-version: '1'
-repo: https://github.com/sparsity-xyz/nova-app-template
-ref: main
-build:
-  directory: /
-  dockerfile: Dockerfile
-metadata:
-  description: ''

@@ -1,9 +1,0 @@
-name: tdsxd8-nova-kms
-version: 3.0.5
-repo: https://github.com/sparsity-xyz/nova-kms
-ref: main
-build:
-  directory: /
-  dockerfile: Dockerfile
-metadata:
-  description: Distributed Key Management Service for the Nova Platform
