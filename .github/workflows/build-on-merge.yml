@@ -817,7 +817,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Release Docker Image" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The release image contains the EIF and capsule-cli runtime:" >> $GITHUB_STEP_SUMMARY
+          echo "The release image contains the EIF and Capsule runtime assets:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.capsule.outputs.release_image }}" >> $GITHUB_STEP_SUMMARY

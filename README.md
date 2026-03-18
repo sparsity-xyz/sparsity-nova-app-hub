@@ -36,7 +36,7 @@ Create a new directory under `apps/` with your application name:
 apps/
 └── your-app-name/
     ├── nova-build.yaml    # Build configuration
-    └── capsule.yaml      # capsule configuration
+    └── capsule.yaml      # Capsule configuration
 ```
 
 #### 2. Configure nova-build.yaml (Build Settings)
@@ -63,7 +63,7 @@ metadata:
   license: MIT
 ```
 
-#### 3. Configure capsule.yaml (capsule Settings)
+#### 3. Configure capsule.yaml (Capsule Settings)
 
 ```yaml
 version: v1
@@ -121,7 +121,7 @@ After build completes:
 | `metadata.license` | string | - | License identifier (e.g., MIT) |
 
 
-### capsule Configuration (capsule.yaml)
+### Capsule Configuration (capsule.yaml)
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -200,14 +200,14 @@ Possible causes:
 
 Most newer instance types: `m5.xlarge`, `c5.xlarge`, `r5.xlarge`, etc. with `.metal` variants having best support.
 
-### Q: How does capsule work?
+### Q: How does Capsule work?
 
-capsule packages your application Docker image into a release image containing:
+Capsule packages your application Docker image into a release image containing:
 1. The EIF (Enclave Image File)
 2. Capsule Runtime supervisor for ingress/egress, attestation, encryption
 3. Nitro CLI for enclave lifecycle management
 
-See [capsule documentation](https://github.com/sparsity-xyz/nova-enclave-capsule) for details.
+See [Capsule documentation](https://github.com/sparsity-xyz/nova-enclave-capsule) for details.
 
 ---
 
