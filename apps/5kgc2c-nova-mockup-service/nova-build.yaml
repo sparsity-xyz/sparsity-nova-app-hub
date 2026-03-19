@@ -1,0 +1,10 @@
+name: "5kgc2c-nova-mockup-service"
+version: "1.2.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "main"
+build:
+  directory: "hello-world-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "mockup service for development outside enclave environment"
