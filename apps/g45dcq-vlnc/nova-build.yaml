@@ -1,0 +1,10 @@
+name: "g45dcq-vlnc"
+version: "1.0.0"
+repo: "https://github.com/karlovl/vlnc"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "crypto's knowledge layer"
