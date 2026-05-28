@@ -1,0 +1,10 @@
+name: "acrpp7-tee-demo"
+version: "1.0.0"
+repo: "https://github.com/karlovl/vlnc"
+ref: "main"
+build:
+  directory: "/"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "demo"
