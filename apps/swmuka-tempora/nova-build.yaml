@@ -1,0 +1,10 @@
+name: "swmuka-tempora"
+version: "1.0.0"
+repo: "https://github.com/andrik663/tempora.git"
+ref: "main"
+build:
+  directory: "app"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Temp mail"
