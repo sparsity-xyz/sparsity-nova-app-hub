@@ -1,0 +1,10 @@
+name: "f24mas-michael-research"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "main"
+build:
+  directory: "hello-world-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Disposable research application for evaluating the Sparsity Nova workflow."
