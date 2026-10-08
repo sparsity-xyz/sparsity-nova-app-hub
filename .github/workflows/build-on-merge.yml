@@ -690,7 +690,7 @@ jobs:
           | **File** | [build-attestation.json](https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json) |
           | **SHA256** | `${{ steps.attestation.outputs.build_attestation_sha256 }}` |
           
-          ## SLSA Provenance & Signature Verification
+          ## Build Provenance & Signature Verification
           
           This image and build attestation are signed using [Sigstore cosign](https://sigstore.dev) with keyless signing.
           
@@ -701,7 +701,8 @@ jobs:
           
           ```bash
           cosign verify \
-            --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+            --certificate-identity='https://github.com/${{ github.repository }}/.github/workflows/build-on-merge.yml@${{ github.ref }}' \
+            --certificate-github-workflow-sha='${{ github.sha }}' \
             --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
             ${{ steps.capsule.outputs.release_image }}@${{ steps.capsule.outputs.digest }}
           ```
@@ -710,15 +711,14 @@ jobs:
           
           ```bash
           # Download attestation files
-          curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json
-          curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json.sig
-          curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json.crt
+          curl -fLO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.json
+          curl -fLO https://github.com/${{ github.repository }}/releases/download/${{ steps.config.outputs.name }}-v${{ steps.config.outputs.version }}/build-attestation.sigstore.json
           
           # Verify signature
           cosign verify-blob \
-            --signature build-attestation.json.sig \
-            --certificate build-attestation.json.crt \
-            --certificate-identity-regexp='https://github.com/${{ github.repository }}/.*' \
+            --bundle build-attestation.sigstore.json \
+            --certificate-identity='https://github.com/${{ github.repository }}/.github/workflows/build-on-merge.yml@${{ github.ref }}' \
+            --certificate-github-workflow-sha='${{ github.sha }}' \
             --certificate-oidc-issuer='https://token.actions.githubusercontent.com' \
             build-attestation.json
           ```
@@ -728,8 +728,8 @@ jobs:
           Run on an EC2 instance with Nitro Enclave support:
           
           ```bash
-          docker pull ${{ steps.capsule.outputs.release_image }}
-          docker run --rm --privileged ${{ steps.capsule.outputs.release_image }}
+          docker pull ${{ steps.capsule.outputs.release_image }}@${{ steps.capsule.outputs.digest }}
+          docker run --rm --privileged ${{ steps.capsule.outputs.release_image }}@${{ steps.capsule.outputs.digest }}
           ```
           
           ## Verification
