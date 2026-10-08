@@ -1,0 +1,12 @@
+name: nova-build-lab-20261008
+version: 2.0.0-lab.1
+repo: https://github.com/sparsity-xyz/sparsity-nova-app-hub
+ref: codex/build-lab-sigstore
+build:
+  directory: apps/nova-build-lab-20261008/source
+  dockerfile: Dockerfile
+  args:
+    - name: BASE_IMAGE
+      value: docker.io/library/python@sha256:2ed6491b93cd49272ee6de2b5a38440c3448360322c089fc23e370722d74179d
+metadata:
+  description: Synthetic Nova build/sign/verify/Nitro lab; no customer data
