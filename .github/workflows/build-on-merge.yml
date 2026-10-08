@@ -401,6 +401,28 @@ jobs:
           echo "release_image=${RELEASE_IMAGE}" >> $GITHUB_OUTPUT
           echo "ecr_image=${ECR_IMAGE}" >> $GITHUB_OUTPUT
       
+      - name: Preload Capsule images through authenticated Docker
+        env:
+          NITRO_HELPER: public.ecr.aws/d4t4u8d2/sparsity-ai/nitro-cli@sha256:ba73ea8d547382a93eaa57487b79ba2f575a377c10bd67e14b44533cc0af1e80
+        run: |
+          set -euo pipefail
+          pull_with_retry() {
+            local image="$1"
+            local delay
+            for delay in 0 5 15; do
+              sleep "$delay"
+              if docker pull --platform linux/amd64 "$image"; then return 0; fi
+            done
+            return 1
+          }
+          # Capsule's local-first path reuses these images; Docker CLI applies registry login.
+          for key in capsule-runtime capsule-shell; do
+            image=$(yq -r ".sources.\"$key\" // \"\"" output/capsule.yaml)
+            if [ -n "$image" ]; then pull_with_retry "$image"; fi
+          done
+          pull_with_retry "$NITRO_HELPER"
+          docker tag "$NITRO_HELPER" public.ecr.aws/d4t4u8d2/sparsity-ai/nitro-cli:latest
+
       - name: Build Capsule release image
         id: capsule
         run: |
