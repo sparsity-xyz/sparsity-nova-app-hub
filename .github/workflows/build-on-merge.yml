@@ -598,9 +598,11 @@ jobs:
           cd output
           cosign sign-blob --yes \
             --bundle build-attestation.sigstore.json \
-            --output-signature build-attestation.json.sig \
-            --output-certificate build-attestation.json.crt \
             build-attestation.json
+          # Cosign 3 writes a bundle; export the existing Nova sidecar formats from it.
+          jq -er '.messageSignature.signature' build-attestation.sigstore.json > build-attestation.json.sig
+          jq -er '.verificationMaterial.certificate.rawBytes // .verificationMaterial.x509CertificateChain.certificates[0].rawBytes' \
+            build-attestation.sigstore.json | base64 --decode | openssl x509 -inform DER -out build-attestation.json.crt
           cosign verify-blob \
             --bundle build-attestation.sigstore.json \
             --certificate-identity="$EXPECTED_IDENTITY" \

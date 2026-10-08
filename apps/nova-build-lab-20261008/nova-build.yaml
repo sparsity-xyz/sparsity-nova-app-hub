@@ -1,5 +1,5 @@
 name: nova-build-lab-20261008
-version: 2.0.0-lab.1
+version: 2.0.0-lab.2
 repo: https://github.com/sparsity-xyz/sparsity-nova-app-hub
 ref: codex/build-lab-sigstore
 build:
