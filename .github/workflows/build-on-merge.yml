@@ -404,8 +404,8 @@ jobs:
           # Capsule's Docker API pull path does not pass registry credentials.
           # Preload through Docker CLI, which uses the ECR login above, so Capsule
           # can use local images instead of the anonymous registry quota.
-          for SOURCE in capsule_runtime capsule_shell; do
-            DEFAULT_IMAGE="${PUBLIC_ECR_REGISTRY}/sparsity-ai/${SOURCE//_/-}:latest"
+          for SOURCE in capsule-runtime capsule-shell; do
+            DEFAULT_IMAGE="${PUBLIC_ECR_REGISTRY}/sparsity-ai/${SOURCE}:latest"
             IMAGE=$(SOURCE="$SOURCE" yq eval '.sources[strenv(SOURCE)] // ""' output/capsule.yaml)
             IMAGE="${IMAGE:-$DEFAULT_IMAGE}"
             docker pull --platform linux/amd64 "$IMAGE"
