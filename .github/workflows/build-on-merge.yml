@@ -399,6 +399,23 @@ jobs:
           echo "release_image=${RELEASE_IMAGE}" >> $GITHUB_OUTPUT
           echo "ecr_image=${ECR_IMAGE}" >> $GITHUB_OUTPUT
       
+      - name: Preload Capsule images with authenticated Docker pulls
+        run: |
+          # Capsule's Docker API pull path does not pass registry credentials.
+          # Preload through Docker CLI, which uses the ECR login above, so Capsule
+          # can use local images instead of the anonymous registry quota.
+          for SOURCE in capsule-runtime capsule-shell; do
+            DEFAULT_IMAGE="${PUBLIC_ECR_REGISTRY}/sparsity-ai/${SOURCE}:latest"
+            IMAGE=$(SOURCE="$SOURCE" yq eval '.sources[strenv(SOURCE)] // ""' output/capsule.yaml)
+            IMAGE="${IMAGE:-$DEFAULT_IMAGE}"
+            docker pull --platform linux/amd64 "$IMAGE"
+            DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$IMAGE")
+            test -n "$DIGEST"
+            SOURCE="$SOURCE" DIGEST="$DIGEST" yq eval -i '.sources[strenv(SOURCE)] = strenv(DIGEST)' output/capsule.yaml
+          done
+          # Nitro CLI currently has a fixed source image and resolves locally first.
+          docker pull --platform linux/amd64 "${PUBLIC_ECR_REGISTRY}/sparsity-ai/nitro-cli:latest"
+
       - name: Build Capsule release image
         id: capsule
         run: |

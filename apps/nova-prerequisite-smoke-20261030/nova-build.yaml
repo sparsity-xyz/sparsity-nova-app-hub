@@ -1,0 +1,10 @@
+name: "nova-prerequisite-smoke-20261030"
+version: "0.0.1"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "c4502dd7ab17df8798ff4e74d2ba12fccc77d448"
+build:
+  directory: "hello-world-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Isolated hello-world build validation; no live deployment or KMS dependency."
