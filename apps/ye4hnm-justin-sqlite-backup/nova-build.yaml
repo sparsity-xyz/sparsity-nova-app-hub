@@ -1,0 +1,10 @@
+name: "ye4hnm-justin-sqlite-backup"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "09188cf5b6194bcd41711997cb749002e2bb1b07"
+build:
+  directory: "sqlite-backup-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Synthetic encrypted SQLite web service with S3 backups, encrypted transaction records and a dedicated testnet checkpoint contract."
