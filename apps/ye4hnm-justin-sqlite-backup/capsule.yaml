@@ -3,11 +3,11 @@ version: v1
 name: "ye4hnm-justin-sqlite-backup"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/ye4hnm-justin-sqlite-backup:1.0.0"
+target: "nova-apps/ye4hnm-justin-sqlite-backup:1.0.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "ye4hnm-justin-sqlite-backup:1.0.0"
+  app: "ye4hnm-justin-sqlite-backup:1.0.1"
 
 defaults:
   # these 2 parameters will be overridden by capsule-runtime with exact values

@@ -1,7 +1,7 @@
 name: "ye4hnm-justin-sqlite-backup"
-version: "1.0.0"
+version: "1.0.1"
 repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
-ref: "09188cf5b6194bcd41711997cb749002e2bb1b07"
+ref: "fd53b019ed46012cf4efb6c058bea036ad99a54a"
 build:
   directory: "sqlite-backup-tee"
   dockerfile: "Dockerfile"
