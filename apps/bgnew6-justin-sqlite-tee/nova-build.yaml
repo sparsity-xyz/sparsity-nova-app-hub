@@ -1,0 +1,10 @@
+name: "bgnew6-justin-sqlite-tee"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "773342d2c0cf6dfef0ff80edfa4e8ba12ae80615"
+build:
+  directory: "sqlite-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Synthetic SQLite queries running inside a Nitro enclave on Capsule hostfs; one-hour experiment. Plain backing storage, no customer data."
