@@ -1,7 +1,7 @@
 name: "msy82f-justin-console-enclave-lab"
-version: "1.0.0"
+version: "1.0.1"
 repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
-ref: "ab03d2287200f0a5137045b706d74e8f4e4611b7"
+ref: "6a15ec1d623bcbebde110bfa292e96e2ef53ff33"
 build:
   directory: "private-console-lab"
   dockerfile: "Dockerfile"

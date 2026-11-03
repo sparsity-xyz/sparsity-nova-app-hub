@@ -3,11 +3,11 @@ version: v1
 name: "msy82f-justin-console-enclave-lab"
 
 # Target image (updated by build workflow in app-hub)
-target: "nova-apps/msy82f-justin-console-enclave-lab:1.0.0"
+target: "nova-apps/msy82f-justin-console-enclave-lab:1.0.1"
 
 sources:
   # Application image (updated by build workflow in app-hub)
-  app: "msy82f-justin-console-enclave-lab:1.0.0"
+  app: "msy82f-justin-console-enclave-lab:1.0.1"
 
 defaults:
   # these 2 parameters will be overridden by capsule-runtime with exact values
