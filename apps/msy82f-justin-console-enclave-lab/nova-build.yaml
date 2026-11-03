@@ -1,0 +1,10 @@
+name: "msy82f-justin-console-enclave-lab"
+version: "1.0.0"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "ab03d2287200f0a5137045b706d74e8f4e4611b7"
+build:
+  directory: "private-console-lab"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Isolated unchanged Nova console plus synthetic MariaDB inside Nitro; private package delivered through attested encryption; no production credentials."
