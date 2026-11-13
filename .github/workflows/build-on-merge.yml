@@ -1,7 +1,7 @@
 # Nova App Hub - Build on Merge Workflow
 # Builds Docker image and creates Capsule release image with embedded EIF
 
-name: Build and Publish
+name: Build and Publish (Staging)
 
 on:
   # Only triggered via API from Nova Platform (no push trigger)
@@ -24,7 +24,7 @@ env:
   # AWS Configuration
   AWS_REGION: us-east-1
   PUBLIC_ECR_REGISTRY: public.ecr.aws/d4t4u8d2
-  ECR_REPOSITORY_PREFIX: sparsity-xyz/nova-apps
+  ECR_REPOSITORY_PREFIX: sparsity-xyz/nova-staging-apps
   S3_BUCKET: nova-app-hub-artifacts-004118891089
 
 jobs:
@@ -47,6 +47,7 @@ jobs:
           # Check if manually triggered with app_dir input
           if [ -n "${{ github.event.inputs.app_dir }}" ]; then
             APP_DIR="${{ github.event.inputs.app_dir }}"
+            [[ "$APP_DIR" == staging-* ]] || { echo "Expected staging app identity"; exit 1; }
             echo "Manual trigger for app: $APP_DIR"
             
             # Verify the app exists
@@ -125,7 +126,7 @@ jobs:
           API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
           curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_STAGING_CALLBACK_API_KEY }}" \
             -d '{
               "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
@@ -133,7 +134,7 @@ jobs:
               "github_run_id": "${{ github.run_id }}"
             }' || echo "Callback failed, but continuing..."
         env:
-          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
+          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_STAGING_API_URL }}
       
       - name: Install yq
         run: |
@@ -653,19 +654,19 @@ jobs:
           echo "Uploading artifacts to S3..."
           
           # Upload build attestation and signature
-          aws s3 cp output/build-attestation.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json"
-          aws s3 cp output/build-attestation.json.sig "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.sig"
-          aws s3 cp output/build-attestation.json.crt "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.crt"
+          aws s3 cp output/build-attestation.json "s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-attestation.json"
+          aws s3 cp output/build-attestation.json.sig "s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-attestation.json.sig"
+          aws s3 cp output/build-attestation.json.crt "s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-attestation.json.crt"
           
           # Upload other build artifacts
-          aws s3 cp output/pcr.json "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/pcr.json"
-          aws s3 cp output/build-output.txt "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-output.txt"
-          aws s3 cp output/capsule.yaml "s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/capsule.yaml"
+          aws s3 cp output/pcr.json "s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/pcr.json"
+          aws s3 cp output/build-output.txt "s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-output.txt"
+          aws s3 cp output/capsule.yaml "s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/capsule.yaml"
           
           echo "✅ Artifacts uploaded successfully"
-          echo "  Attestation: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json"
-          echo "  Signature: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.sig"
-          echo "  Certificate: s3://${{ env.S3_BUCKET }}/builds/${APP_NAME}/${VERSION}/build-attestation.json.crt"
+          echo "  Attestation: s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-attestation.json"
+          echo "  Signature: s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-attestation.json.sig"
+          echo "  Certificate: s3://${{ env.S3_BUCKET }}/staging/builds/${APP_NAME}/${VERSION}/build-attestation.json.crt"
       
       - name: Create GitHub Release
         run: |
@@ -775,11 +776,14 @@ jobs:
             gh release edit "$TAG" \
               --repo "${{ github.repository }}" \
               --draft=false \
-              --prerelease=false \
+              --prerelease=true \
+              --latest=false \
               --title "$NAME" \
               --notes-file release-notes.md
           else
             gh release create "$TAG" \
+              --prerelease \
+              --latest=false \
               --repo "${{ github.repository }}" \
               --target "$GITHUB_SHA" \
               --title "$NAME" \
@@ -862,7 +866,7 @@ jobs:
           API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
           curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_STAGING_CALLBACK_API_KEY }}" \
             -d '{
               "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
@@ -879,7 +883,7 @@ jobs:
               "build_attestation_sha256": "${{ steps.attestation.outputs.build_attestation_sha256 }}"
             }' || echo "Callback failed, but continuing..."
         env:
-          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
+          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_STAGING_API_URL }}
       
       - name: Callback to Nova Platform (Failure)
         if: failure() && github.event.inputs.app_sqid != '' && github.event.inputs.build_id != ''
@@ -889,7 +893,7 @@ jobs:
           API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
           curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_STAGING_CALLBACK_API_KEY }}" \
             -d '{
               "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
@@ -898,4 +902,4 @@ jobs:
               "github_run_id": "${{ github.run_id }}"
             }' || echo "Callback failed, but continuing..."
         env:
-          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_PLATFORM_API_URL }}
+          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_STAGING_API_URL }}
