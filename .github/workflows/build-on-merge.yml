@@ -126,7 +126,7 @@ jobs:
           API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
           curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.NOVA_STAGING_CALLBACK_API_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
               "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
@@ -134,7 +134,7 @@ jobs:
               "github_run_id": "${{ github.run_id }}"
             }' || echo "Callback failed, but continuing..."
         env:
-          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_STAGING_API_URL }}
+          NOVA_PLATFORM_API_URL: https://staging.sparsity.cloud
       
       - name: Install yq
         run: |
@@ -866,7 +866,7 @@ jobs:
           API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
           curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.NOVA_STAGING_CALLBACK_API_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
               "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
@@ -883,7 +883,7 @@ jobs:
               "build_attestation_sha256": "${{ steps.attestation.outputs.build_attestation_sha256 }}"
             }' || echo "Callback failed, but continuing..."
         env:
-          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_STAGING_API_URL }}
+          NOVA_PLATFORM_API_URL: https://staging.sparsity.cloud
       
       - name: Callback to Nova Platform (Failure)
         if: failure() && github.event.inputs.app_sqid != '' && github.event.inputs.build_id != ''
@@ -893,7 +893,7 @@ jobs:
           API_URL="${NOVA_PLATFORM_API_URL%/}"  # Strip trailing slash if present
           curl -X POST "${API_URL}/api/builds/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.NOVA_STAGING_CALLBACK_API_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.NOVA_PLATFORM_CALLBACK_API_KEY }}" \
             -d '{
               "app_sqid": "${{ github.event.inputs.app_sqid }}",
               "build_id": ${{ github.event.inputs.build_id }},
@@ -902,4 +902,4 @@ jobs:
               "github_run_id": "${{ github.run_id }}"
             }' || echo "Callback failed, but continuing..."
         env:
-          NOVA_PLATFORM_API_URL: ${{ secrets.NOVA_STAGING_API_URL }}
+          NOVA_PLATFORM_API_URL: https://staging.sparsity.cloud
