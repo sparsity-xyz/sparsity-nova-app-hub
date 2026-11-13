@@ -1,0 +1,10 @@
+name: "staging-mcscer-jl-staging-end-to-end-verification"
+version: "0.0.1-staging"
+repo: "https://github.com/sparsity-xyz/sparsity-nova-examples"
+ref: "main"
+build:
+  directory: "hello-world-tee"
+  dockerfile: "Dockerfile"
+
+metadata:
+  description: "Temporary validation of the isolated staging build, TEE, proof and registry pipeline."
