@@ -1,0 +1,13 @@
+# Dedicated private build runner
+
+The existing public `build-on-merge.yml` is unchanged. The new `private-build.yml` is a template for a dedicated **private** runner repository; it refuses to execute in this public App Hub. No customer configurations or source should be committed here.
+
+Nova Platform dispatches a reviewed ref in that private repository with a short-lived capability for exactly one build. The runner claims the job and receives a pinned archive and server-generated configuration over authenticated HTTPS. It does not receive a customer GitHub token. Source access is rechecked by Platform at download time. No public fallback exists.
+
+The runner requires Python 3.12+, Docker, a checksum-pinned Capsule CLI, a private ECR registry and operator-managed cosign key. It records PCR0/1/2, the exact source SHA and image digest. Images and their signatures stay in private ECR; no GitHub Releases, public S3 artifacts, or Rekor entries are generated. Logs stay in the private runner repository and are proxied by Nova after per-application owner/viewer authorization.
+
+Copy `.github/workflows/private-build.yml` and `scripts/private-build.py` into the private runner's default branch and configure its `private-build` environment. Variables: `NOVA_PRIVATE_BUILD_ORIGIN`, `PRIVATE_ECR_REGION`, `CAPSULE_CLI_VERSION`, `CAPSULE_CLI_SHA256`. Secrets: scoped `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `COSIGN_PRIVATE_KEY`, `COSIGN_PASSWORD`. ECR permissions must cover only the intended staging repository namespace; runtime IAM identities require authenticated pull permissions. Review the downloaded CLI archive checksum independently before configuration.
+
+Do not use a persistent or shared self-hosted runner for customer Dockerfiles. Do not grant customer stakeholders access to the runner repository, which can contain builds for multiple customers. Nova's read-only application-specific build-viewer grant is the customer access mechanism. Source is limited to 256 MiB compressed and 1 GiB expanded, with symlinks/hardlinks/traversal rejected. Git submodule/LFS materialization is not implemented.
+
+Run `python3.12 scripts/test_private_build.py` to verify safe archive handling. Hardware build, registry publication, cosign verification and authorized runtime pull must also pass staging acceptance; local archive tests alone do not establish deployment success. This workflow does not claim SLSA certification or enforce runtime signature-policy verification.
