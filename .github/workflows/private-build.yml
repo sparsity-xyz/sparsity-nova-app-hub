@@ -51,18 +51,31 @@ jobs:
           curl --fail --silent --show-error --location "https://github.com/sparsity-xyz/nova-enclave-capsule/releases/download/$CAPSULE_CLI_VERSION/capsule-cli-linux-x86_64-$CAPSULE_CLI_VERSION.tar.gz" -o /tmp/capsule-cli.tar.gz
           echo "$CAPSULE_CLI_SHA256  /tmp/capsule-cli.tar.gz" | sha256sum --check
           tar -xzf /tmp/capsule-cli.tar.gz -C /tmp
-          sudo install /tmp/capsule-cli /usr/local/bin/capsule-cli
+          sudo install "/tmp/capsule-cli-linux-x86_64-$CAPSULE_CLI_VERSION/capsule-cli" /usr/local/bin/capsule-cli
+      - name: Build private image
+        env:
+          NOVA_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
+          BUILD_ID: ${{ inputs.build_id }}
+          BUILD_TICKET: ${{ inputs.ticket }}
+        run: python scripts/private-build.py build
       - uses: sigstore/cosign-installer@v3
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.PRIVATE_ECR_REGION }}
-      - name: Build and publish privately
+      - name: Publish private image
         env:
           NOVA_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
           BUILD_ID: ${{ inputs.build_id }}
           BUILD_TICKET: ${{ inputs.ticket }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        run: python scripts/private-build.py
+        run: python scripts/private-build.py publish
+      - name: Report workflow failure
+        if: failure()
+        env:
+          NOVA_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
+          BUILD_ID: ${{ inputs.build_id }}
+          BUILD_TICKET: ${{ inputs.ticket }}
+        run: python scripts/private-build.py report-failure
