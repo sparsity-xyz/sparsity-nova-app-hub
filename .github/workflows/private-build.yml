@@ -1,0 +1,81 @@
+name: Private application build
+# Install this workflow and scripts/private-build.py in a DEDICATED PRIVATE repository.
+# Dispatch is rejected in a public repository before source or AWS credentials are requested.
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        required: true
+        type: string
+      ticket:
+        required: true
+        type: string
+      origin:
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: private-build-${{ inputs.build_id }}
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.event.repository.private == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: private-build
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Validate private build origin
+        env:
+          REQUESTED_ORIGIN: ${{ inputs.origin }}
+          EXPECTED_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
+          BUILD_TICKET: ${{ inputs.ticket }}
+        run: |
+          echo "::add-mask::$BUILD_TICKET"
+          test -n "$EXPECTED_ORIGIN"
+          test "$REQUESTED_ORIGIN" = "$EXPECTED_ORIGIN"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install PyYAML==6.0.3
+      - name: Install reviewed Capsule CLI
+        env:
+          CAPSULE_CLI_VERSION: ${{ vars.CAPSULE_CLI_VERSION }}
+          CAPSULE_CLI_SHA256: ${{ vars.CAPSULE_CLI_SHA256 }}
+        run: |
+          [[ "$CAPSULE_CLI_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$CAPSULE_CLI_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          curl --fail --silent --show-error --location "https://github.com/sparsity-xyz/nova-enclave-capsule/releases/download/$CAPSULE_CLI_VERSION/capsule-cli-linux-x86_64-$CAPSULE_CLI_VERSION.tar.gz" -o /tmp/capsule-cli.tar.gz
+          echo "$CAPSULE_CLI_SHA256  /tmp/capsule-cli.tar.gz" | sha256sum --check
+          tar -xzf /tmp/capsule-cli.tar.gz -C /tmp
+          sudo install "/tmp/capsule-cli-linux-x86_64-$CAPSULE_CLI_VERSION/capsule-cli" /usr/local/bin/capsule-cli
+      - name: Build private image
+        env:
+          NOVA_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
+          BUILD_ID: ${{ inputs.build_id }}
+          BUILD_TICKET: ${{ inputs.ticket }}
+        run: python scripts/private-build.py build
+      - uses: sigstore/cosign-installer@v3
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.PRIVATE_ECR_REGION }}
+      - name: Publish private image
+        env:
+          NOVA_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
+          BUILD_ID: ${{ inputs.build_id }}
+          BUILD_TICKET: ${{ inputs.ticket }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: python scripts/private-build.py publish
+      - name: Report workflow failure
+        if: failure()
+        env:
+          NOVA_ORIGIN: ${{ vars.NOVA_PRIVATE_BUILD_ORIGIN }}
+          BUILD_ID: ${{ inputs.build_id }}
+          BUILD_TICKET: ${{ inputs.ticket }}
+        run: python scripts/private-build.py report-failure
